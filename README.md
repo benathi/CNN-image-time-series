@@ -1,4 +1,8 @@
-KagglePlankton
+Repository for Deep Learning Project for Image Recognition
 ==============
 
-Repository for Kaggle Plankton Competition http://www.kaggle.com/c/datasciencebowl
+
+
+Data:
+
+Kaggle Plankton Competition http://www.kaggle.com/c/datasciencebowl
