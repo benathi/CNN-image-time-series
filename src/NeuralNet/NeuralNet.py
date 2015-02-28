@@ -9,6 +9,8 @@ import numpy as np
 import os
 import inspect
 import collections
+EPSILON = 0.12
+
 
 class NeuralNet:
     ''' Required Fields '''
@@ -24,10 +26,10 @@ class NeuralNet:
     def sigmoid(self, z):
         return 1.0/(1+np.exp(-z))
     def sigmoidGrad(self, z):
-        return 1.0/(1+np.exp(-z)) ### TODO - modify
+        return self.sigmoid(z)*(1-self.sigmoid(z))
 
     activationDicts = {}
-    activationDicts['sigmoid'] = (np.vectorize(sigmoid), np.vectorize(sigmoidGrad))
+    activationDicts['sigmoid'] = (sigmoid, sigmoidGrad)
 
     ''' Optional Fields '''
     testData = None
@@ -65,7 +67,9 @@ class NeuralNet:
         for i in range(self.numLayers):
             hSize = temp1[i]
             hSizeNext = temp1[i+1]
-            self.Thetas.append(np.zeros((hSizeNext, hSize+1)))
+            _Theta = np.random.uniform(-EPSILON,EPSILON,(hSizeNext, hSize+1))
+            # randomize values
+            self.Thetas.append(_Theta)
             #print np.shape(self.Thetas[i])
         ## activation function
         print '2. Mapping Activation Functions', activationFunctions
@@ -76,8 +80,23 @@ class NeuralNet:
                 print 'Unsupported Activation Function:', a
                 print 'Dictionary of Supported Functions:', self.activationDicts
     
-    def train(self, regParams=[0.01]):
+    def gradient(self):
+        pass
+    
+    def train(self, tolerance=0.01, regParams=[0.01]):
         print 'Training'
+        numIt = 0
+        alpha = 0.01    ## TODO - configurable
+        costList = []
+        while True:
+            numIt += 1
+            J,G = self.gradient(regParams)
+            for i in range(len(self.Thetas)):
+                self.Thetas[i] += alpha*G[i]
+            costList.append(J)
+            print 'Iteration %d: Cost = %f' % (numIt, J)
+            if i > 30 and (costList[i-1]-J)/J < tolerance:
+                break
     
     def hypothesis(self, X):
         h = np.array(X) # deep copy
@@ -94,9 +113,9 @@ class NeuralNet:
 
 def main():
     nn = NeuralNet()
+    print [np.shape(ob) for ob in nn.Thetas]
     nn.train()
     print [np.shape(i) for i in nn.trainData]
-    #print nn.trainData
     
     
     
