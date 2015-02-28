@@ -9,6 +9,7 @@ import numpy as np
 import os
 import inspect
 import collections
+import scipy.optimize.fmin_cg as fmincg
 EPSILON = 0.12
 
 def sigmoid(z):
@@ -153,6 +154,13 @@ class NeuralNet:
                 #print 'Decreased by %f percent' % percentTage
                 if percentTage < tolerance:
                     break
+    def train_cg(self):
+        pass
+        #fmincg()
+        # Write fmincg for our purpose
+        # original scipy code
+        # https://github.com/scipy/scipy/blob/e81956b62d54d653c44fe6f3bc493a474853bd7f/scipy/optimize/optimize.py
+        # 
     
     def hypothesis(self, X):
         h = np.array(X) # deep copy
@@ -190,8 +198,6 @@ class NeuralNet:
                 J_after, G_after = self.gradient(X=self.trainData[0], y=self.trainData[1])
                 diff_error += ( (J_after-J_before)/DEL - G_before[0][r,c] )**2
                 print 'Accumulated Error = ', diff_error
-        
-        
 
 def main():
     nn = NeuralNet(hiddenLayersSize=[25, 15], 
