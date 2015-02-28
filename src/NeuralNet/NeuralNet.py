@@ -80,22 +80,22 @@ class NeuralNet:
                 print 'Unsupported Activation Function:', a
                 print 'Dictionary of Supported Functions:', self.activationDicts
     
-    def gradient(self):
-        pass
+    def gradient(self, **args):
+        return (1,[1,2]) # MODIFY
     
-    def train(self, tolerance=0.01, regParams=[0.01]):
+    def train(self, tolerance=0.01, maxNumIts = 1000, regParams=[0.01]):
         print 'Training'
         numIt = 0
         alpha = 0.01    ## TODO - configurable
         costList = []
         while True:
             numIt += 1
-            J,G = self.gradient(regParams)
+            J,G = self.gradient(regParams=regParams)
             for i in range(len(self.Thetas)):
                 self.Thetas[i] += alpha*G[i]
             costList.append(J)
             print 'Iteration %d: Cost = %f' % (numIt, J)
-            if i > 30 and (costList[i-1]-J)/J < tolerance:
+            if (numIt > 30 and (costList[numIt-1]-J)/J < tolerance) or numIt > 1000:
                 break
     
     def hypothesis(self, X):
