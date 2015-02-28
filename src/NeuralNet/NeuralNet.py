@@ -81,7 +81,26 @@ class NeuralNet:
                 print 'Dictionary of Supported Functions:', self.activationDicts
     
     def gradient(self, **args):
-        return (1,[1,2]) # MODIFY
+        return self.gradientLogLoss(self, X=self.trainData[0], y=self.trainData[1], regParams=[1.0,1.0])
+    
+
+    def gradientLogLoss(self, X,y, thetaList, regParams):
+        ## Initial w/o any hidden layers
+        H = - np.mat(X) * np.mat(thetaList[0].T)
+        H = np.vectorize(self.actFns[0])(H)
+
+        ## Now for each hidden layer:
+        for i in range(1, len(self.actFns)):
+            H = - np.mat(np.concatenate((np.ones((H.shape[0],1)), H), axis=1))  * np.mat(thetaList[i].T)
+            H = np.vectorize(self.actFns[i])(H)
+
+            ##  Unregularized Cost Function
+        J = np.sum(-np.multiply(y, np.log(H)) + np.multiply(1-y, np.log(1-H)))/X.shape[0]
+
+        ## Regularized Cost Function
+        for i in range(len(thetaList)):
+            J += regParams[i]/(X.shape[0]) * np.sum(np.multiply(thetaList[i][:,1:],thetaList[i][:,1:]) )
+        
     
     def train(self, tolerance=0.01, maxNumIts = 1000, regParams=[0.01]):
         print 'Training'
