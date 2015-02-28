@@ -20,12 +20,14 @@ class NeuralNet:
     ''' Required Fields '''
     Thetas = []
     trainData = None
+    data_labels = None
     outputDim = 0
     inputDim = 0
     numInputs = 0
     actFns = []
     actGs = []
     numLayers = 0
+    
 
     activationDicts = {}
     activationDicts['sigmoid'] = (sigmoid, sigmoidGrad)
@@ -46,6 +48,7 @@ class NeuralNet:
             print "Other Data"
             
         ''' Adding column of 1's to X'''
+        self.data_labels = data_labels
         self.numInputs, self.inputDim = np.shape(designMatrix)
         designMatrix = np.column_stack( (np.ones((self.numInputs)), designMatrix) )
         label_matrix = np.zeros((self.numInputs, self.outputDim))
@@ -156,12 +159,12 @@ class NeuralNet:
         for i in range(self.numLayers):
             activation = self.actFns[i]
             if i > 0:   # assume X already has columns of 1
-                h = np.c_(np.ones(()), h)
+                h = np.column_stack((np.ones((np.shape(X)[0],1)), h))
             h = activation(np.dot(h, self.Thetas[i].T ) )   # has to be numpy map function
         return h
     
     def classify(self, X):
-        h = self.hypothesis(self, X)
+        h = self.hypothesis(X)
         return  np.argmax(h,axis=1) # TODO - check if it's +1
 
 
@@ -194,10 +197,12 @@ def main():
     nn = NeuralNet(hiddenLayersSize=[25, 15], 
                  activationFunctions=['sigmoid', 'sigmoid', 'sigmoid'])
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(regParams=[0.1,0.1,0.1])
+    nn.train(maxNumIts=10000,regParams=[0.1,0.1,0.1])
     print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
-    
+    #print(nn.trainData[1] )
+    #print(nn.classify(nn.trainData[0]))
+    print np.sum((nn.data_labels != nn.classify(nn.trainData[0])))/nn.numInputs
     
     
 if __name__ == "__main__":
