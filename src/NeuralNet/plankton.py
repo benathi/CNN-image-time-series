@@ -87,22 +87,22 @@ def loadData():
 
 def runNeuralNet():
     nn = NeuralNet.NeuralNet(trainingData='PLANKTON',
-                             hiddenLayersSize=[59, 59], 
-                 activationFunctions=['sigmoid']*4)
+                             hiddenLayersSize=[419, 239], 
+                 activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(maxNumIts=10,regParams=[0.01]*4,
+    nn.train(maxNumIts=2000,regParams=[0.01]*3,
              trainToMax=True)
     print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
     #print(nn.trainData[1] )
     #print(nn.classify(nn.trainData[0]))
     print 'Log Loss Score'
-    print nn.gradient(regParams=[0.0]*4)[0]
+    print nn.gradient(regParams=[0.0]*3)[0]
 
 # define the log loss metric
 
 def main():
-    loadData()
+    #loadData()
     runNeuralNet()
 
 
