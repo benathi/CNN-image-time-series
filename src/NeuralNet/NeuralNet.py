@@ -108,7 +108,7 @@ class NeuralNet:
         H = np.dot(X, self.Thetas[0].T)
         H = self.actFns[0](H)
         ## Now for each hidden layer:
-        for i in range(1, len(self.actFns)):
+        for i in range(1, self.numLayers):
             H = np.dot(np.concatenate((np.ones((m,1)), H), axis=1),
                        self.Thetas[i].T )
             H = self.actFns[i](H)
