@@ -38,10 +38,37 @@ S. Ma, Z. Huang, A. Karpathy, A. Khosla, M. Bernstein, et al. Imagenet large sca
 - TO READ
 
 
+=============
+Possible Research Agendas
+=============
+1. Explores dimensionality reduction - Learning transformations: Qiu Q. Mar 2014
+    - Find newer paper?
+2. Other pre-processing:
+    - Find other paper as well?
+
+3. Neural Network Tweaking
+    - Activation function
+      - learned the rectifier unit 
+      - 
+  
+4. Understanding neural network
+    - 
+
+5. Rotation: 
+ - what property of neural network can make it invariant to rotation
+ - Galaxy or plankton data:
+ - How can they be generalized for actual images (CIFAR-10/100, Caltech-101)
 
 
+Random ideas:
+  - auto-encoder: 
+  
+Tools:
+Code for deconvolutioning neural network? 
 
 Data:
 Galaxy Data, Kaggle Plankton Competition http://www.kaggle.com/c/datasciencebowl
 
+
+http://www.matthewzeiler.com/pubs/cvpr2010/cvpr2010.pdf
 
