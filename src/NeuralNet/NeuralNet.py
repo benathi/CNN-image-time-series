@@ -9,6 +9,7 @@ import numpy as np
 import os
 import inspect
 import collections
+#import scipy.optimize.fmincg as fmincg
 EPSILON = 0.12
 
 def sigmoid(z):
@@ -27,7 +28,8 @@ class NeuralNet:
     actFns = []
     actGs = []
     numLayers = 0
-    
+    data_labels_dict = None # dictionary mapping index to data attribute
+    labelMapText = None     # dictionary mapping index to text label
 
     activationDicts = {}
     activationDicts['sigmoid'] = (sigmoid, sigmoidGrad)
@@ -36,19 +38,27 @@ class NeuralNet:
     testData = None
     
     
-    def loadData(self, dataset='MNIST'):
+    def loadData(self, dataset='DIGITS'):
+        import pickle
         current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-        if dataset == 'MNIST':
+        if dataset == 'DIGITS':
             designMatrix = np.loadtxt(os.path.join( current_folder_path,
                                                     '../../data/digits/digits_designMatrix.txt') )
             data_labels = np.loadtxt(os.path.join( current_folder_path,
                                                    '../../data/digits/digits_label.txt'))
             data_labels = np.vectorize(lambda (x): (x -1))(data_labels)
+        if dataset == 'PLANKTON':
+            print 'Loading Plankton Data'
+            designMatrix , data_labels, self.data_labels_dict, self.labelMapText =  \
+            pickle.load( open(os.path.join(current_folder_path,
+                                           '../../data/planktonTrain.p'), 'rb'))
+            print 'Done Loading Plankton Data'
         else:
             print "Other Data"
             
         ''' Adding column of 1's to X'''
         self.data_labels = data_labels
+        self.outputDim = int(np.max(data_labels)) + 1   # assume index starts from 0
         self.numInputs, self.inputDim = np.shape(designMatrix)
         designMatrix = np.column_stack( (np.ones((self.numInputs)), designMatrix) )
         label_matrix = np.zeros((self.numInputs, self.outputDim))
@@ -59,12 +69,11 @@ class NeuralNet:
         return d
             
     
-    def __init__(self, trainingData='MNIST',
+    def __init__(self, trainingData='PLANKTON',
                  numClasses=10,
                  hiddenLayersSize=[25], 
                  activationFunctions=['sigmoid', 'sigmoid']):
         print 'Initializing Neural Network Object'
-        self.outputDim = numClasses
         self.trainData = self.loadData(trainingData)
         print '1.Data Loaded.'
         print '2. Initializing Thetas.'
@@ -136,10 +145,10 @@ class NeuralNet:
         return (J,Theta_grads)
         
     
-    def train(self, tolerance=0.0001, maxNumIts = 10000, regParams=[1.0,1.0]):
+    def train(self, tolerance=0.00000001, maxNumIts = 1000, regParams=[1.0,1.0], trainToMax=False):
         print 'Training'
         numIt = -1
-        alpha = 0.3    ## TODO - configurable
+        alpha = 0.3   ## TODO - configurable
         costList = []
         while numIt < maxNumIts:
             numIt += 1
@@ -151,8 +160,15 @@ class NeuralNet:
             if numIt > 30:
                 percentTage = (costList[numIt-1]-costList[numIt])/J*100.0
                 #print 'Decreased by %f percent' % percentTage
-                if percentTage < tolerance:
+                if (not trainToMax) and percentTage < tolerance:
                     break
+    def train_cg(self):
+        pass
+        #fmincg()
+        # Write fmincg for our purpose
+        # original scipy code
+        # https://github.com/scipy/scipy/blob/e81956b62d54d653c44fe6f3bc493a474853bd7f/scipy/optimize/optimize.py
+        # 
     
     def hypothesis(self, X):
         h = np.array(X) # deep copy
@@ -190,20 +206,19 @@ class NeuralNet:
                 J_after, G_after = self.gradient(X=self.trainData[0], y=self.trainData[1])
                 diff_error += ( (J_after-J_before)/DEL - G_before[0][r,c] )**2
                 print 'Accumulated Error = ', diff_error
-        
-        
 
 def main():
-    nn = NeuralNet(hiddenLayersSize=[25, 15], 
-                 activationFunctions=['sigmoid', 'sigmoid', 'sigmoid'])
+    nn = NeuralNet(trainingData = 'DIGITS',
+                   hiddenLayersSize=[200]*2, 
+                 activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(maxNumIts=10000,regParams=[0.1,0.1,0.1])
+    nn.train(maxNumIts=10000,regParams=[0.1]*3)
     print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
     #print(nn.trainData[1] )
     #print(nn.classify(nn.trainData[0]))
-    print np.sum((nn.data_labels != nn.classify(nn.trainData[0])))/nn.numInputs
-    
+    print np.sum((nn.data_labels != nn.classify(nn.trainData[0])))/(1.0*nn.numInputs)
+
     
 if __name__ == "__main__":
     main()
