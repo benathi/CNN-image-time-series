@@ -42,7 +42,8 @@ def loadData():
     maxPixel = 25
     imageSize = maxPixel*maxPixel
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    dataPath = '/Users/ben/Kaggle/Plankton/Data'
+    #dataPath = '/Users/ben/Kaggle/Plankton/Data'
+    dataPath = '/Users/Shared/DeepLearningProject/data'
     directory_names = list(set(glob.glob(os.path.join(dataPath,"train", "*")))\
                            .difference(set(glob.glob(os.path.join(dataPath,"train","*.*")))))
     m = 0
@@ -87,23 +88,23 @@ def loadData():
 
 def runNeuralNet():
     nn = NeuralNet.NeuralNet(trainingData='PLANKTON',
-                             hiddenLayersSize=[59, 59], 
-                 activationFunctions=['sigmoid']*4)
+                             hiddenLayersSize=[59, 29], 
+                 activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(maxNumIts=10,regParams=[0.01]*4,
-             trainToMax=True)
-    print [np.shape(i) for i in nn.trainData]
+    #nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
+    nn.train_cg(regParams=[0.01]*3)
+    #print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
-    #print(nn.trainData[1] )
+    #print(nn.trainData[1])
     #print(nn.classify(nn.trainData[0]))
-    print 'Log Loss Score'
-    print nn.gradient(regParams=[0.0]*4)[0]
+
 
 # define the log loss metric
 
 def main():
-    loadData()
+    #loadData()
     runNeuralNet()
+    
 
 
 if __name__ == "__main__":

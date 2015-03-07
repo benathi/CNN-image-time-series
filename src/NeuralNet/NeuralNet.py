@@ -9,7 +9,7 @@ import numpy as np
 import os
 import inspect
 import collections
-#import scipy.optimize.fmincg as fmincg
+import scipy.optimize as opt
 EPSILON = 0.12
 
 def sigmoid(z):
@@ -52,6 +52,7 @@ class NeuralNet:
             designMatrix , data_labels, self.data_labels_dict, self.labelMapText =  \
             pickle.load( open(os.path.join(current_folder_path,
                                            '../../data/planktonTrain.p'), 'rb'))
+            designMatrix = 255 - designMatrix
             print 'Done Loading Plankton Data'
         else:
             print "Other Data"
@@ -85,6 +86,7 @@ class NeuralNet:
             _Theta = np.random.uniform(-EPSILON,EPSILON,(hSizeNext, hSize+1))
             # randomize values
             self.Thetas.append(_Theta)
+        self.Thetas = np.array(self.Thetas)
         ## activation function
         print '2. Mapping Activation Functions', activationFunctions
         for a in activationFunctions:
@@ -96,63 +98,69 @@ class NeuralNet:
                 print 'Unsupported Activation Function:', a
                 print 'Dictionary of Supported Functions:', self.activationDicts
     
-    def gradient(self, **args):
-        return self.gradientLogLoss(X=self.trainData[0], y=self.trainData[1],
-                                    regParams=args['regParams'])
+    def regCost(self, Thetas1D, X, y, regParams):
+        T_list = self.unpackTheta(Thetas1D)
+        return self.regCost_LogLoss(T_list, X, y, regParams);
+    def regGradient(self, Thetas1D, X, y, regParams):
+        T_list = self.unpackTheta(Thetas1D)
+        #print 'Len of Gradient ', len(T_list)
+        return self.packThetas(self.regGradient_LogLoss(T_list, X, y, regParams))
     
-
-    def gradientLogLoss(self, regParams, X, y):
+    def regGradientWithCost(self, Ts, X, y, regParams):
+        #return self.regGradientWithCost_LogLoss(X=self.trainData[0], y=self.trainData[1],
+        #                            regParams=args['regParams'])
+        return self.regGradientWithCost_LogLoss(Ts, X, y, regParams)
+    
+    def regCost_LogLoss(self, Ts, X, y, regParams):
         ## 1. Cost Function
         m = np.shape(X)[0]*1.0
-        ## Initial w/o any hidden layers
-        H = np.dot(X, self.Thetas[0].T)
-        H = self.actFns[0](H)
-        ## Now for each hidden layer:
-        for i in range(1, len(self.actFns)):
-            H = np.dot(np.concatenate((np.ones((m,1)), H), axis=1),
-                       self.Thetas[i].T )
-            H = self.actFns[i](H)
+        H = self.hypothesis(X)
         ##  Unregularized Cost Function  
-        J = np.sum(- np.multiply(y, np.log(H)) + np.multiply( y-1.0, np.log(1.0-H)) )/m
+        J = self.LogLossScore_UnNormalized(H, y)
         #print "Unregularized cost", J
-        for i in range(len(self.Thetas)):
-            J += regParams[i]/(2.0*X.shape[0]) * np.sum(np.square(self.Thetas[i][:,1:]))
-        #print "Regularized Cost", J
-        
+        for i in range(len(Ts)):
+            J += regParams[i]/(2.0*X.shape[0]) * np.sum(np.square(Ts[i][:,1:]))
+        return J
+    
+    def regGradient_LogLoss(self, Ts, X, y, regParams):
+        m = np.shape(X)[0]*1.0
         ## 2. Gradient
         ## First, calculate initial values:
         ## zvec goes from z_2, z_3, ... 
-        zvec = [np.dot(X,self.Thetas[0].T)]
-        for i in range(1,len(self.Thetas)):
+        zvec = [np.dot(X,Ts[0].T)]
+        for i in range(1,len(Ts)):
             zvec.append(  np.dot( np.column_stack( (np.ones((m,1)) ,self.actFns[i-1](zvec[i-1])) ),
-                                         self.Thetas[i].T)   )
+                                         Ts[i].T)   )
         delta_vec = [ self.actFns[-1](zvec[-1]) - y]
-        for i in range(1, len(self.Thetas)):
-            j = len(self.Thetas) - i - 1
+        for i in range(1, len(Ts)):
+            j = len(Ts) - i - 1
             delta_vec.insert(0,
-                             np.dot(delta_vec[0], self.Thetas[j+1])[:,1:] * self.actGs[j+1](zvec[j]))
+                             np.dot(delta_vec[0], Ts[j+1])[:,1:] * self.actGs[j+1](zvec[j]))
         
         Theta_grads = [ (1.0/m) * np.dot(delta_vec[0].T, X )     ]
-        for i in range(len(self.Thetas)-1):
+        for i in range(len(Ts)-1):
             Theta_grads.append( (1.0/m)*np.dot( delta_vec[i+1].T,
                                                 np.column_stack( (np.ones(np.shape(zvec[i])[0]), self.actFns[i](zvec[i]))) )
                                                 )
-        for i in range(len(self.Thetas)-1):
-            Theta_grads[i] += (regParams[i]/m)*np.column_stack( ((np.zeros(np.shape(self.Thetas[i])[0])),
-                                                                self.Thetas[i][:,1:]))
-            #Theta_grads[j] += (regParams[i]/m)*self.Thetas[i]
-        
-        return (J,Theta_grads)
+        for i in range(len(Ts)-1):
+            Theta_grads[i] += (regParams[i]/m)*np.column_stack( ((np.zeros(np.shape(Ts[i])[0])),
+                                                                Ts[i][:,1:]))
+        return np.array(Theta_grads)
+    
+    def regGradientWithCost_LogLoss(self, Ts, X, y, regParams):
+        J = self.regCost(Ts, X, y, regParams)
+        Theta_grads = self.regGradient(Ts, X, y, regParams)
+        return (J, Theta_grads)
         
     
-    def train(self, tolerance=0.00000001, maxNumIts = 1000, regParams=[1.0,1.0], trainToMax=False):
+    def train(self, tolerance=0.00000001, maxNumIts = 1000, regParams=[1.0,1.0], trainToMax=False, **args):
         print 'Training'
         numIt = -1
         alpha = 0.3   ## TODO - configurable
         costList = []
         while numIt < maxNumIts:
             numIt += 1
-            J,G = self.gradient(regParams=regParams)
+            J,G = self.regGradientWithCost(Ts = self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
             for i in range(len(self.Thetas)):
                 self.Thetas[i] -= alpha*G[i]
             costList.append(J)
@@ -162,13 +170,41 @@ class NeuralNet:
                 #print 'Decreased by %f percent' % percentTage
                 if (not trainToMax) and percentTage < tolerance:
                     break
-    def train_cg(self):
-        pass
-        #fmincg()
-        # Write fmincg for our purpose
-        # original scipy code
-        # https://github.com/scipy/scipy/blob/e81956b62d54d653c44fe6f3bc493a474853bd7f/scipy/optimize/optimize.py
-        # 
+        print 'Final Log Loss Score (Normalized)'
+        print self.ReportLogLossScore()
+    
+    def unpackTheta(self, Theta1D):
+        Ts = []
+        start = 0
+        for i in range(self.numLayers):
+            _shape = np.shape(self.Thetas[i])
+            _numEl = _shape[0]*_shape[1]
+            #print _shape
+            #print _numEl
+            #print len(Theta1D)
+            #print len(Theta1D[start:(start + _numEl)])
+            Ts.append(
+                      np.reshape(Theta1D[start:start + _numEl], _shape )
+                      )
+            start += _numEl
+        return Ts
+    
+    def packThetas(self, T_list):
+        #return np.concatenate(  (np.ndarray.flatten(Theta1), np.ndarray.flatten(Theta2)) , axis = 0)
+        return np.concatenate( [np.ndarray.flatten(Ti) for Ti in T_list] , axis=0)
+    
+    def train_cg(self, regParams=[0.01]*10):
+        print 'Training with Conjugate Gradient'
+        Thetas_expanded = self.packThetas(self.Thetas)
+        #print Thetas_expanded
+        ''' TODO - see if packing and unpacking gives us the same Thetas'''
+        X = self.trainData[0]
+        y = self.trainData[1]
+        Thetas_expanded, _ = opt.fmin_cg(lambda(T) : self.regCost(T, X, y, regParams), 
+                     Thetas_expanded, 
+                     lambda(T) : self.regGradient(T, X, y, regParams))
+        self.Thetas = self.packThetas(Thetas_expanded)
+        print self.ReportLogLossScore()
     
     def hypothesis(self, X):
         h = np.array(X) # deep copy
@@ -183,6 +219,18 @@ class NeuralNet:
         h = self.hypothesis(X)
         return  np.argmax(h,axis=1) # TODO - check if it's +1
 
+
+    def LogLossScore_UnNormalized(self, H, y):
+        return np.sum(- np.multiply(y, np.log(H)) + np.multiply( y-1, np.log(1.0-H)) )/(np.shape(H)[0]*1.0)
+        
+
+    def ReportLogLossScore(self):
+        H = self.hypothesis(self.trainData[0])
+        y = self.trainData[1]
+        for i in xrange(np.shape(H)[0]):
+            #print 'i=%d. Sum of probability = %f. Max = %f. Length = %d' % (i, np.sum(H[i]), np.max(H[i]), len(H[i]))
+            H[i] /= np.sum(H[i])
+        return self.LogLossScore_UnNormalized(H, y)
 
     def test_loadSampleThetas(self):
         import os
@@ -201,18 +249,20 @@ class NeuralNet:
         for r in range(nRow1):
             for c in range(nCol1):
                 print '(r,c)=(%d,%d)' % (r,c)
-                J_before, G_before = self.gradient(X=self.trainData[0], y=self.trainData[1])
+                J_before, G_before = self.regGradientWithCost(X=self.trainData[0], y=self.trainData[1])
                 self.Thetas[0][r,c] += DEL
-                J_after, G_after = self.gradient(X=self.trainData[0], y=self.trainData[1])
+                J_after, G_after = self.regGradientWithCost(X=self.trainData[0], y=self.trainData[1])
                 diff_error += ( (J_after-J_before)/DEL - G_before[0][r,c] )**2
                 print 'Accumulated Error = ', diff_error
+
 
 def main():
     nn = NeuralNet(trainingData = 'DIGITS',
                    hiddenLayersSize=[200]*2, 
                  activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(maxNumIts=10000,regParams=[0.1]*3)
+    #nn.train(maxNumIts=10000,regParams=[0.1]*3)
+    nn.train_cg(regParams=[0.1]*3)
     print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
     #print(nn.trainData[1] )
