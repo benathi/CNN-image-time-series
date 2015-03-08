@@ -294,7 +294,10 @@ class NeuralNet:
         print 'Difference in Grad2', np.linalg.norm(Grad2 - finiteDiffs_grad2)
         print np.max(np.abs(Grad1 - finiteDiffs_grad1))
         print np.max(np.abs(Grad2 - finiteDiffs_grad2))
-        
+    
+    def testGradientFiniteDiffGeneralThetas(self):
+        pass
+        # TODO - same as testGradientFiniteDiffGeneral but for general number of thetas
         
 def testNeuralNet():
     nn = NeuralNet(trainingData = 'DIGITS',
@@ -307,11 +310,11 @@ def testNeuralNet():
 
 def main():
     nn = NeuralNet(trainingData = 'DIGITS',
-                   hiddenLayersSize=[25,25], 
-                 activationFunctions=['sigmoid']*3)
+                   hiddenLayersSize=[25]*3, 
+                 activationFunctions=['sigmoid']*4)
     print [np.shape(ob) for ob in nn.Thetas]
     #nn.train(maxNumIts=10000,regParams=[0.1]*3)
-    nn.train_cg(regParams=[0.1]*4)
+    nn.train_cg(regParams=[0.1]*6)
     print [np.shape(i) for i in nn.trainData]
     print np.sum((nn.data_labels != nn.classify(nn.trainData[0])))/(1.0*nn.numInputs)
 

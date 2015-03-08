@@ -117,8 +117,6 @@ def fmincg(f, X, **args):
         f0 = f1
         df0 = np.copy(df1)
         update(Thetas, z1, s)
-        #for _j in range(np.shape(Thetas)[0]):
-        #    Thetas[_j] += z1*s[_j]
         f2, df2 = f(Thetas)
         i += (length < 0)
         d2 = generalizedDot(df2,s)
@@ -149,15 +147,12 @@ def fmincg(f, X, **args):
                 #print d2, "d2"
                 z2 = max(min(z2, INT*z3), (1.0-INT)*z3)
                 z1 += z2
-                #for _j in range(np.shape(Thetas)[0]):
-                #    Thetas[_j] += z2*s[_j]
                 update(Thetas, z2, s)
                 f2, df2 = f(Thetas)
                 M -= 1
                 i += (length<0)
                 d2 = generalizedDot(df2, s)
                 z3 -= z2
-                #print M
             #print 'Could break out of loop'
             #print "f2 = %f. M = %f" % (f2, M)
             #print d2, "d2"
@@ -195,23 +190,17 @@ def fmincg(f, X, **args):
             d3 = d2
             z3 = -z2
             z1 += z2
-            #for _j in range(np.shape(Thetas)[0]):
-            #    Thetas[_j] += z2*s[_j]
             update(Thetas, z2, s)
             f2, df2 = f(Thetas)
             M -= 1
             i += (length<0)
             d2 = generalizedDot(df2, s)
-            
-            #print i 
         #print 'Outside while 1'
         if success:
             #print 'success'
             f1 = f2
-            #fX = [fX.T, f1].T
             fX.append(f1)
-            print 'Iteration %d. Cost=\t%f. Decreased %f Percent' % (i, f1, 100*(fX[-2]-fX[-1])/fX[-1])
-            #s = (np.dot(df2.T , df2) - np.dot(df1.T,df2))/ (np.dot(np.dot(df1.T,df1),s) ) - df2
+            print 'Iteration %d. Cost=\t%f\tDecreased %f%%' % (i, f1, 100*(fX[-2]-fX[-1])/fX[-1])
             _mult = ( generalizedNorm(df2) - generalizedDot(df1, df2) )/generalizedNorm(df1)
             #print 'Multiplier = ', _mult
             for _j in range(np.shape(s)[0]):
@@ -241,11 +230,10 @@ def fmincg(f, X, **args):
             df2 = np.copy(tmp)
             s = -np.copy(df1)
             d1 = -generalizedNorm(s)
-            z1 = 1/(1-d1)
+            z1 = 1.0/(1.0-d1)
             ls_failed = 1
     
     print 'fmincg Return'
-    #print Thetas
     return (Thetas, fX)
 
 
