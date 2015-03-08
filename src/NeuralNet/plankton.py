@@ -104,7 +104,6 @@ def runNeuralNet():
 def main():
     #loadData()
     runNeuralNet()
-    
 
 
 if __name__ == "__main__":

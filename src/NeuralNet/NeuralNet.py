@@ -302,5 +302,5 @@ def main():
 
     
 if __name__ == "__main__":
-    testNeuralNet()
-    #main()
+    #testNeuralNet()
+    main()
