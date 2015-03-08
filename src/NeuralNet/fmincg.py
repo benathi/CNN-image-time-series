@@ -49,9 +49,26 @@ entirely at the user's own risk.
 '''
 import numpy as np
 import math
+import cmath
 import sys
 from scipy.optimize._tstutils import f2
 from test.test_userdict import d2
+
+def sToSflat(s):
+    s_flat = []
+    for i in range(np.shape(s)[0]):
+        s_flat = np.concatenate( (s_flat,np.ndarray.flatten(s[i])) )
+    return s_flat
+
+def generalizedNorm(s):
+    s_flat = sToSflat(s)
+    return np.dot(s_flat.T, s_flat)
+
+def generalizedDot(df2, s):
+    s_flat = sToSflat(s)
+    df2_flat = sToSflat(df2)
+    d2 = np.dot(df2_flat.T,s_flat)
+    return d2
 
 def fmincg(f, X, **args):
     Thetas = np.copy(X)
@@ -73,20 +90,30 @@ def fmincg(f, X, **args):
     ls_failed = 0
     fX = []
     f1, df1 = f(Thetas)
+    print f1, "f1"
     i += (length<0)
     s = -np.copy(df1)
-    d1 = -np.dot(s.T, s)
+    d1 = -generalizedNorm(s)
+    #print d1, "d1"
     z1 = red/(1.0-d1)
+    #print z1, "z1"
     while i < abs(length):
         i += (length > 0)
-        print 'Iteration ', i
+        
         Thetas0 = np.copy(Thetas)
         f0 = f1
         df0 = np.copy(df1)
-        Thetas += np.dot(z1,s)
+        #print df1
+        #print z1*s
+        for _j in range(np.shape(Thetas)[0]):
+            Thetas[_j] += z1*s[_j]
+        #Thetas += z1*s
         f2, df2 = f(Thetas)
+        #print 'f2 at i < abs(length)', f2
+        print 'Iteration %d. Cost=\t%f' % (i, f2)
+        
         i += (length < 0)
-        d2 = np.dot(df2.T,s)
+        d2 = generalizedDot(df2,s)
         f3 = f1
         d3 = d1
         z3 = -z1
@@ -105,27 +132,34 @@ def fmincg(f, X, **args):
                 else:
                     A = 6.0*(f2-f3)/z3 + 3.0*(d2+d3)
                     B = 3.0*(f3-f2) - z3*(d3 + 2.0*d2)
-                    z2 = (math.sqrt(B*B - A * d2*z3*z3) - B)/A
-                if math.isnan(z2):
+                    z2 = (cmath.sqrt(B*B - A * d2*z3*z3) - B)/A
+                if cmath.isnan(z2) or isinstance(z2, complex):
                     z2 = z3/2.0
+                #print "f2", f2
+                #print f1*RHO* z1*d1, "f1*RHO*z1*D1"
+                #print -SIG*d1, "-SIG * d1"
+                #print d2, "d2"
                 z2 = max(min(z2, INT*z3), (1.0-INT)*z3)
                 z1 = z1+z2
-                Thetas += np.dot(z2,s)
+                for _j in range(np.shape(Thetas)[0]):
+                    Thetas[_j] += z2*s[_j]
                 f2, df2 = f(Thetas)
                 M -= 1
                 i += (length<0)
-                d2 = np.dot(df2.T,s)
+                d2 = generalizedDot(df2, s)
                 z3 -= z2
-                print M
+                #print M
             #print 'Could break out of loop'
-            #print f2, "f2"
+            #print "f2 = %f. M = %f" % (f2, M)
             #print d2, "d2"
             #print M, "M"
             #print d2
             #print (SIG*d1)
             if (f2 > f1 + RHO * z1*d1) or (d2 > -SIG*d1):
+                #print 'first condition - not success'
                 break
             elif d2 > SIG * d1:
+                #print 'mark success'
                 success = 1
                 break
             elif M == 0:
@@ -133,8 +167,9 @@ def fmincg(f, X, **args):
             #print 'Didnt break'
             A = 6.0*(f2-f3)/(1.0*z3)  + 3.0*(d2+d3)
             B = 3.0*(f3-f2) - z3*(d3 + 2.0*d2)
-            z2 = -d2*z3*z3 / ( B + math.sqrt( B*B - A*d2*z3*z3))
-            if (math.isnan(z2)) or isinstance(z2, complex) or z2 < 0:
+            #print 'B*B - ...', B*B - A*d2*z3*z3
+            z2 = -d2*z3*z3 / ( B + cmath.sqrt( B*B - A*d2*z3*z3))
+            if (cmath.isnan(z2)) or isinstance(z2, complex) or z2 < 0:
                 if limit < -0.5:
                     z2 = z1 * (EXT-1.0)
                 else:
@@ -151,31 +186,37 @@ def fmincg(f, X, **args):
             d3 = d2
             z3 = -z2
             z1 = z1+z2
-            Thetas += np.dot(z2,s)
+            for _j in range(np.shape(Thetas)[0]):
+                Thetas[_j] += z2*s[_j]
             f2, df2 = f(Thetas)
             M -= 1
             i += (length<0)
-            d2 = np.dot(df2.T,s)
+            d2 = generalizedDot(df2, s)
             
             #print i 
-        print 'Outside while 1'
+        #print 'Outside while 1'
         if success:
-            print 'success'
+            #print 'success'
             f1 = f2
             #fX = [fX.T, f1].T
             fX = np.concatenate((fX, [f1]))
-            s = (np.dot(df2.T , df2) - np.dot(df1.T,df2))/ (np.dot(np.dot(df1.T,df1),s) ) - df2
+            #s = (np.dot(df2.T , df2) - np.dot(df1.T,df2))/ (np.dot(np.dot(df1.T,df1),s) ) - df2
+            _mult = ( generalizedDot(df2, s) - generalizedDot(df1, df2) )/generalizedNorm(df1)
+            for _j in range(np.shape(s)[0]):
+                s[_j] *= _mult - df2[_j]
+            
             tmp = np.copy(df1)
             df1 = np.copy(df2)
             df2 = np.copy(tmp)
-            d2 = np.dot(df1.T,s)
+            d2 = generalizedDot(df1, s)
             if d2 > 0:
                 s = -np.copy(df1)
-                d2 = -np.dot(s.T,s)
+                d2 = - generalizedNorm(s)
             z1 = z1 * min(RATIO, d1/(d2-sys.float_info.min))
             d1 = d2
             ls_failed = 0
         else:
+            print 'Not Success'
             Thetas = np.copy(Thetas0)
             f1 = f0
             df1 = np.copy(df0)
@@ -186,12 +227,12 @@ def fmincg(f, X, **args):
             df1 = np.copy(df2)
             df2 = np.copy(tmp)
             s = -np.copy(df1)
-            d1 = -np.dot(s.T,s)
+            d1 = -generalizedNorm(s)
             z1 = 1/(1-d1)
             ls_failed = 1
     
     print 'fmincg Return'
-    print Thetas
+    #print Thetas
     return (Thetas, fX)
 
 

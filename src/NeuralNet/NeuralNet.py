@@ -52,7 +52,8 @@ class NeuralNet:
             designMatrix , data_labels, self.data_labels_dict, self.labelMapText =  \
             pickle.load( open(os.path.join(current_folder_path,
                                            '../../data/planktonTrain.p'), 'rb'))
-            designMatrix = 255 - designMatrix
+            designMatrix = 255.0 - designMatrix
+            designMatrix /= 255.0
             print 'Done Loading Plankton Data'
         else:
             print "Other Data"
@@ -190,13 +191,13 @@ class NeuralNet:
         #return np.concatenate(  (np.ndarray.flatten(Theta1), np.ndarray.flatten(Theta2)) , axis = 0)
         return np.concatenate( [np.ndarray.flatten(Ti) for Ti in T_list] , axis=0)
     
-    def regGradientWithCost_1D(self, T1D, X, y, regParams):
+    ''''def regGradientWithCost_1D(self, T1D, X, y, regParams):
         res = self.regGradientWithCost(self.unpackTheta(T1D), X, y, regParams)
-        return (res[0], self.packThetas(res[1]))
+        return (res[0], self.packThetas(res[1]))'''
     
     def train_cg(self, regParams=[0.01]*10):
         print 'Training with Conjugate Gradient'
-        Thetas_expanded = self.packThetas(self.Thetas)
+        #Thetas_expanded = self.packThetas(self.Thetas)
         #print Thetas_expanded
         # Debug here
 
@@ -205,10 +206,10 @@ class NeuralNet:
         ''' TODO - see if packing and unpacking gives us the same Thetas'''
         X = self.trainData[0]
         y = self.trainData[1]
-        Thetas_expanded, fX = fmincg(lambda(T1D) : self.regGradientWithCost_1D(T1D, X, y, regParams),
-                                         Thetas_expanded, MaxIter=200)
-        self.Thetas = self.unpackTheta(Thetas_expanded)
-        
+        Thetas_expanded, fX = fmincg(lambda(Ts) : self.regGradientWithCost(Ts, X, y, regParams),
+                                         self.Thetas, MaxIter=200)
+        #self.Thetas = self.unpackTheta(Thetas_expanded)
+        self.Thetas = Thetas_expanded # modify
         print self.ReportLogLossScore()
     
     def hypothesis(self, X):
@@ -301,15 +302,16 @@ def testNeuralNet():
                    activationFunctions=['sigmoid']*2)
     print [np.shape(ob) for ob in nn.Thetas]
     #nn.testGradientFiniteDiff()
-    nn.train_cg()
+    #print 'norm of diff', np.linalg.norm(nn.Thetas[1] - nn.unpackTheta(nn.packThetas(nn.Thetas))[1] )
+    #nn.train_cg()
 
 def main():
     nn = NeuralNet(trainingData = 'DIGITS',
-                   hiddenLayersSize=[100]*2, 
-                 activationFunctions=['sigmoid']*3)
+                   hiddenLayersSize=[25], 
+                 activationFunctions=['sigmoid']*2)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(maxNumIts=10000,regParams=[0.1]*3)
-    #nn.train_cg(regParams=[0.1]*3)
+    #nn.train(maxNumIts=10000,regParams=[0.1]*3)
+    nn.train_cg(regParams=[0.1]*3)
     print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
     #print(nn.trainData[1] )
