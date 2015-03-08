@@ -3,3 +3,6 @@
 data/*
 *.p
 .DS_STORE
+*.gz
+*.pkl.gz
+*.jpg
