@@ -43,7 +43,9 @@ purposes only, they have not been tested to the degree that would be
 advisable in any important application.  All use of these programs is
 entirely at the user's own risk.
 
-
+Changes made:
+translated from matlab to python
+modify Thetas to be a list of matrices instead of 1d array
 
 
 '''
