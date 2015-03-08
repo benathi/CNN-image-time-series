@@ -5,10 +5,56 @@ Created on Mar 7, 2015
 
 fmincg code translated from Octave to Matlab
 
+Minimize a continuous differentialble multivariate function. Starting point
+is given by "X" (D by 1), and the function named in the string "f", must
+return a function value and a vector of partial derivatives. The Polack-
+Ribiere flavour of conjugate gradients is used to compute search directions,
+and a line search using quadratic and cubic polynomial approximations and the
+Wolfe-Powell stopping criteria is used together with the slope ratio method
+for guessing initial step sizes. Additionally a bunch of checks are made to
+make sure that exploration is taking place and that extrapolation will not
+be unboundedly large. The "length" gives the length of the run: if it is
+positive, it gives the maximum number of line searches, if negative its
+absolute gives the maximum allowed number of function evaluations. You can
+(optionally) give "length" a second component, which will indicate the
+reduction in function value to be expected in the first line-search (defaults
+to 1.0). The function returns when either its length is up, or if no further
+progress can be made (ie, we are at a minimum, or so close that due to
+numerical problems, we cannot get any closer). If the function terminates
+within a few iterations, it could be an indication that the function value
+and derivatives are not consistent (ie, there may be a bug in the
+implementation of your "f" function). The function returns the found
+solution "X", a vector of function values "fX" indicating the progress made
+and "i" the number of iterations (line searches or function evaluations,
+depending on the sign of "length") used.
+
+Copyright (C) 2001 and 2002 by Carl Edward Rasmussen. Date 2002-02-13
+
+(C) Copyright 1999, 2000 & 2001, Carl Edward Rasmussen
+
+Permission is granted for anyone to copy, use, or modify these
+programs and accompanying documents for purposes of research or
+education, provided this copyright notice is retained, and note is
+made of any changes that have been made.
+ 
+These programs and documents are distributed without any warranty,
+express or implied.  As the programs were written for research
+purposes only, they have not been tested to the degree that would be
+advisable in any important application.  All use of these programs is
+entirely at the user's own risk.
+
+
+
+
 '''
 import numpy as np
+import math
+import sys
+from scipy.optimize._tstutils import f2
+from test.test_userdict import d2
 
-def fmincg(f, Thetas, **args):
+def fmincg(f, X, **args):
+    Thetas = np.copy(X)
     length = 100
     if 'MaxIter' in args:
         length = args['MaxIter']
@@ -32,6 +78,113 @@ def fmincg(f, Thetas, **args):
     z1 = red/(1.0-d1)
     while i < abs(length):
         i += (length > 0)
+        print 'Iteration ', i
+        Thetas0 = Thetas
+        f0 = f1
+        df0 = df1
+        Thetas = Thetas+ np.dot(z1,s)
+        f2, df2 = f(Thetas)
+        i += (length < 0)
+        d2 = np.dot(df2.T,s)
+        f3 = f1
+        d3 = d1
+        z3 = -z1
+        if length > 0:
+            M = MAX
+        else:
+            M = min(MAX, - length - i)
+        success = 0
+        limit = -1
+        while 1:
+            #print "check while loop"
+            while (( f2> f1 + RHO * np.dot(z1,d1)) or (d2 > -SIG * d1) and (M>0) ):
+                limit = z1
+                if (f2 > f1):
+                    z2 = z3 - (0.5 * np.dot(d3, np.dot(z3,z3)))/(np.dot(d3,z3) + f2 - f3) 
+                else:
+                    A = 6*(f2-f3)/z3 + 3 *(d2+d3)
+                    B = 3*(f3-f2) - z3*(d3 + 2*d2)
+                    z2 = (math.sqrt(B*B - np.dot(np.dot(A * d2,z3),z3)) - B)/A
+                if math.isnan(z2):
+                    z2 = z3/2
+                z2 = max(min(z2, INT*z3), (1.0-INT)*z3)
+                z1 = z1+z2
+                Thetas = Thetas + np.dot(z2,s)
+                f2, df2 = f(Thetas)
+                M = M -1
+                i += (length<0)
+                d2 = np.dot(df2.T,s)
+                z3 = z3-z2
+            #print 'Could break out of loop'
+            #print f2, "f2"
+            #print d2, "d2"
+            #print M, "M"
+            #print d2
+            #print (SIG*d1)
+            if (f2 > f1 + RHO * np.dot(z1,d1)) or (d2 > -SIG*d1):
+                break
+            elif d2 > SIG * d1:
+                success = 1
+                break
+            elif M == 0:
+                break
+            #print 'Didnt break'
+            A = 6*(f2-f3) /z3  + 3*(d2+d3)
+            B = 3*(f3-f2) - z3*(d3 + 2*d2)
+            z2 = -np.dot(np.dot(d2,z3),z3) / ( B + math.sqrt( B*B - np.dot(np.dot(A*d2,z3),z3)))
+            if (math.isnan(z2)) or isinstance(z2, complex) or z2 < 0:
+                if limit < -0.5:
+                    z2 = z1 * (EXT-1.0)
+                else:
+                    z2 = (limit - z1)/2
+            elif (limit > -0.5) and (z2+z1 > limit):
+                z2 = (limit-z1)/2
+            elif (limit < -0.5) and (z2 +z1 > z1 * EXT):
+                z2 = z1*(EXT-1.0)
+            elif z2 < -z3*INT:
+                z2 = -z3*INT
+            elif (limit > -0.5) & (z2 < (limit-z1)*(1.0-INT)):
+                z2 = (limit-z1) * (1.0-INT)
+            f3 = f2
+            d3 = d2
+            z3 = -z2
+            z1 = z1+z2
+            Thetas = Thetas + np.dot(z2,s)
+            f2, df2 = f(Thetas)
+            M = M-1
+            i += (length<0)
+            d2 = np.dot(df2.T,s)
+            
+            #print i 
+        if success:
+            f1 = f2
+            fX = [fX.T, f1].T
+            s = (np.dot(df2.T , df2) - np.dot(df1.T,df2))/ (np.dot(np.dot(df1.T,df1),s) ) - df2
+            tmp = df1
+            df1 = df2
+            df2 = tmp
+            d2 = np.dot(df1.T,s)
+            if d2 > 0:
+                s = -df1
+                d2 = -np.dot(s.T,s)
+            z1 = z1 * min(RATIO, d1/(d2-sys.float_info.min))
+            d1 = d2
+            ls_failed = 0
+        else:
+            Thetas = Thetas0
+            f1 = f0
+            df1 = df0
+            if ls_failed or (i > abs(length)):
+                break
+            tmp = df1
+            df1 = df2
+            df2 = tmp
+            s = -df1
+            d1 = -np.dot(s.T,s)
+            z1 = 1/(1-d1)
+            ls_failed = 1
+    return (Thetas, fX)
+
 
 def main():
     pass

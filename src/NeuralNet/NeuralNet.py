@@ -9,7 +9,7 @@ import numpy as np
 import os
 import inspect
 import collections
-import scipy.optimize as opt
+from fmincg import fmincg
 EPSILON = 0.12
 
 def sigmoid(z):
@@ -191,6 +191,10 @@ class NeuralNet:
 
         return np.concatenate( [np.ndarray.flatten(Ti) for Ti in T_list] , axis=0)
     
+    def regGradientWithCost_1D(self, T1D, X, y, regParams):
+        res = self.regGradientWithCost(self.unpackTheta(T1D), X, y, regParams)
+        return (res[0], self.packThetas(res[1]))
+    
     def train_cg(self, regParams=[0.01]*10):
         print 'Training with Conjugate Gradient'
         Thetas_expanded = self.packThetas(self.Thetas)
@@ -202,10 +206,8 @@ class NeuralNet:
         ''' TODO - see if packing and unpacking gives us the same Thetas'''
         X = self.trainData[0]
         y = self.trainData[1]
-        Thetas_expanded, _ = opt.fmin_ncg(
-                                         lambda(T1D) : self.regCost(self.unpackTheta(T1D), X, y, regParams), 
-                                         Thetas_expanded, 
-                                         lambda(T1D) : self.packThetas(self.regGradient(self.unpackTheta(T1D), X, y, regParams)))
+        J, Thetas_expanded = fmincg(lambda(T1D) : self.regGradientWithCost_1D(T1D, X, y, regParams),
+                                         Thetas_expanded, MaxIter=200)
         self.Thetas = self.packThetas(Thetas_expanded)
         
         print self.ReportLogLossScore()
@@ -235,6 +237,7 @@ class NeuralNet:
             #print 'i=%d. Sum of probability = %f. Max = %f. Length = %d' % (i, np.sum(H[i]), np.max(H[i]), len(H[i]))
             H[i] /= np.sum(H[i])
         return self.LogLossScore_UnNormalized(H, y)
+        
 
     def test_loadSampleThetas(self):
         import os
@@ -302,5 +305,5 @@ def main():
 
     
 if __name__ == "__main__":
-    #testNeuralNet()
-    main()
+    testNeuralNet()
+    #main()
