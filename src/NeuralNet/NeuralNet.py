@@ -188,6 +188,7 @@ class NeuralNet:
     
     def packThetas(self, T_list):
         #return np.concatenate(  (np.ndarray.flatten(Theta1), np.ndarray.flatten(Theta2)) , axis = 0)
+
         return np.concatenate( [np.ndarray.flatten(Ti) for Ti in T_list] , axis=0)
     
     def train_cg(self, regParams=[0.01]*10):
@@ -197,15 +198,16 @@ class NeuralNet:
         # Debug here
 
         print "no error? - norm looks okay"
-        
+        print type(self.Thetas)
         ''' TODO - see if packing and unpacking gives us the same Thetas'''
         X = self.trainData[0]
         y = self.trainData[1]
-        Thetas_expanded, _ = opt.fmin_cg(
+        Thetas_expanded, _ = opt.fmin_ncg(
                                          lambda(T1D) : self.regCost(self.unpackTheta(T1D), X, y, regParams), 
                                          Thetas_expanded, 
                                          lambda(T1D) : self.packThetas(self.regGradient(self.unpackTheta(T1D), X, y, regParams)))
         self.Thetas = self.packThetas(Thetas_expanded)
+        
         print self.ReportLogLossScore()
     
     def hypothesis(self, X):
@@ -248,18 +250,33 @@ class NeuralNet:
         Theta1, Theta2 = self.Thetas
         nRow1, nCol1 = np.shape(Theta1)
         nRow2, nCol2 = np.shape(Theta2)
-        regParams = [0.0]*2
+        regParams = [4.0]*2
         DEL = 0.000001
         diff_error = 0.0
-        for r in range(nRow1):
-            for c in range(nCol1):
+#        for r in range(nRow1):
+#            for c in range(nCol1):
+#                print '(r,c)=(%d,%d)' % (r,c)
+#                J_before, G_before = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+#                self.Thetas[0][r,c] += DEL
+#                J_after, G_after = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+#                #G_before[0][r,c] += (J_after-J_before)/DEL
+#                diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
+#                print G_before[0][r,c]
+#                print G_after[0][r,c]
+#                print (J_after-J_before)/DEL
+#                print 'Accumulated Error in theta 1 = ', diff_error
+        for r in range(nRow2):
+            for c in range(nCol2):
                 print '(r,c)=(%d,%d)' % (r,c)
                 J_before, G_before = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
-                self.Thetas[0][r,c] += DEL
+                self.Thetas[1][r,c] += DEL
                 J_after, G_after = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
-                G_before[0][r,c] += (J_after-J_before)/DEL
+                #G_before[0][r,c] += (J_after-J_before)/DEL
                 diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
-                print 'Accumulated Error = ', diff_error
+                print G_before[1][r,c]
+                print G_after[1][r,c]
+                print (J_after-J_before)/DEL
+                print 'Accumulated Error in theta 2= ', diff_error
         
         
 def testNeuralNet():
@@ -267,8 +284,8 @@ def testNeuralNet():
                    hiddenLayersSize=[3],
                    activationFunctions=['sigmoid']*2)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.testGradientFiniteDiff()
-
+    #nn.testGradientFiniteDiff()
+    nn.train_cg()
 
 def main():
     nn = NeuralNet(trainingData = 'DIGITS',
