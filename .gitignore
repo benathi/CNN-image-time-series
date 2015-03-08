@@ -5,3 +5,5 @@ data/*
 .DS_STORE
 
 src/NeuralNet/testfunction.py
+
+src/LeNet/octave-workspace

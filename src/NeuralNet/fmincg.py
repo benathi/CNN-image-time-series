@@ -55,6 +55,7 @@ from test.test_userdict import d2
 
 def fmincg(f, X, **args):
     Thetas = np.copy(X)
+    print 'Shape of Thetas', np.shape(Thetas)
     length = 100
     if 'MaxIter' in args:
         length = args['MaxIter']
@@ -73,16 +74,16 @@ def fmincg(f, X, **args):
     fX = []
     f1, df1 = f(Thetas)
     i += (length<0)
-    s = -df1
+    s = -np.copy(df1)
     d1 = -np.dot(s.T, s)
     z1 = red/(1.0-d1)
     while i < abs(length):
         i += (length > 0)
         print 'Iteration ', i
-        Thetas0 = Thetas
+        Thetas0 = np.copy(Thetas)
         f0 = f1
-        df0 = df1
-        Thetas = Thetas+ np.dot(z1,s)
+        df0 = np.copy(df1)
+        Thetas += np.dot(z1,s)
         f2, df2 = f(Thetas)
         i += (length < 0)
         d2 = np.dot(df2.T,s)
@@ -97,31 +98,32 @@ def fmincg(f, X, **args):
         limit = -1
         while 1:
             #print "check while loop"
-            while (( f2> f1 + RHO * np.dot(z1,d1)) or (d2 > -SIG * d1) and (M>0) ):
+            while  ( (f2> f1 + RHO * np.dot(z1,d1)) or (d2 > -SIG * d1)) and (M>0):
                 limit = z1
                 if (f2 > f1):
                     z2 = z3 - (0.5 * np.dot(d3, np.dot(z3,z3)))/(np.dot(d3,z3) + f2 - f3) 
                 else:
-                    A = 6*(f2-f3)/z3 + 3 *(d2+d3)
-                    B = 3*(f3-f2) - z3*(d3 + 2*d2)
-                    z2 = (math.sqrt(B*B - np.dot(np.dot(A * d2,z3),z3)) - B)/A
+                    A = 6.0*(f2-f3)/z3 + 3.0*(d2+d3)
+                    B = 3.0*(f3-f2) - z3*(d3 + 2.0*d2)
+                    z2 = (math.sqrt(B*B - A * d2*z3*z3) - B)/A
                 if math.isnan(z2):
-                    z2 = z3/2
+                    z2 = z3/2.0
                 z2 = max(min(z2, INT*z3), (1.0-INT)*z3)
                 z1 = z1+z2
-                Thetas = Thetas + np.dot(z2,s)
+                Thetas += np.dot(z2,s)
                 f2, df2 = f(Thetas)
-                M = M -1
+                M -= 1
                 i += (length<0)
                 d2 = np.dot(df2.T,s)
-                z3 = z3-z2
+                z3 -= z2
+                print M
             #print 'Could break out of loop'
             #print f2, "f2"
             #print d2, "d2"
             #print M, "M"
             #print d2
             #print (SIG*d1)
-            if (f2 > f1 + RHO * np.dot(z1,d1)) or (d2 > -SIG*d1):
+            if (f2 > f1 + RHO * z1*d1) or (d2 > -SIG*d1):
                 break
             elif d2 > SIG * d1:
                 success = 1
@@ -129,16 +131,16 @@ def fmincg(f, X, **args):
             elif M == 0:
                 break
             #print 'Didnt break'
-            A = 6*(f2-f3) /z3  + 3*(d2+d3)
-            B = 3*(f3-f2) - z3*(d3 + 2*d2)
-            z2 = -np.dot(np.dot(d2,z3),z3) / ( B + math.sqrt( B*B - np.dot(np.dot(A*d2,z3),z3)))
+            A = 6.0*(f2-f3)/(1.0*z3)  + 3.0*(d2+d3)
+            B = 3.0*(f3-f2) - z3*(d3 + 2.0*d2)
+            z2 = -d2*z3*z3 / ( B + math.sqrt( B*B - A*d2*z3*z3))
             if (math.isnan(z2)) or isinstance(z2, complex) or z2 < 0:
                 if limit < -0.5:
                     z2 = z1 * (EXT-1.0)
                 else:
-                    z2 = (limit - z1)/2
+                    z2 = (limit - z1)/2.0
             elif (limit > -0.5) and (z2+z1 > limit):
-                z2 = (limit-z1)/2
+                z2 = (limit-z1)/2.0
             elif (limit < -0.5) and (z2 +z1 > z1 * EXT):
                 z2 = z1*(EXT-1.0)
             elif z2 < -z3*INT:
@@ -149,40 +151,47 @@ def fmincg(f, X, **args):
             d3 = d2
             z3 = -z2
             z1 = z1+z2
-            Thetas = Thetas + np.dot(z2,s)
+            Thetas += np.dot(z2,s)
             f2, df2 = f(Thetas)
-            M = M-1
+            M -= 1
             i += (length<0)
             d2 = np.dot(df2.T,s)
             
             #print i 
+        print 'Outside while 1'
         if success:
+            print 'success'
             f1 = f2
-            fX = [fX.T, f1].T
+            #fX = [fX.T, f1].T
+            fX = np.concatenate((fX, [f1]))
             s = (np.dot(df2.T , df2) - np.dot(df1.T,df2))/ (np.dot(np.dot(df1.T,df1),s) ) - df2
-            tmp = df1
-            df1 = df2
-            df2 = tmp
+            tmp = np.copy(df1)
+            df1 = np.copy(df2)
+            df2 = np.copy(tmp)
             d2 = np.dot(df1.T,s)
             if d2 > 0:
-                s = -df1
+                s = -np.copy(df1)
                 d2 = -np.dot(s.T,s)
             z1 = z1 * min(RATIO, d1/(d2-sys.float_info.min))
             d1 = d2
             ls_failed = 0
         else:
-            Thetas = Thetas0
+            Thetas = np.copy(Thetas0)
             f1 = f0
-            df1 = df0
+            df1 = np.copy(df0)
             if ls_failed or (i > abs(length)):
+                print 'Line Search Failed'
                 break
-            tmp = df1
-            df1 = df2
-            df2 = tmp
-            s = -df1
+            tmp = np.copy(df1)
+            df1 = np.copy(df2)
+            df2 = np.copy(tmp)
+            s = -np.copy(df1)
             d1 = -np.dot(s.T,s)
             z1 = 1/(1-d1)
             ls_failed = 1
+    
+    print 'fmincg Return'
+    print Thetas
     return (Thetas, fX)
 
 

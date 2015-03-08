@@ -139,7 +139,7 @@ class NeuralNet:
             Theta_grads.append( (1.0/m)*np.dot( delta_vec[i+1].T,
                                                 np.column_stack( (np.ones(np.shape(zvec[i])[0]), self.actFns[i](zvec[i]))) )
                                                 )
-        for i in range(len(Ts)-1):
+        for i in range(len(Ts)):
             Theta_grads[i] += (regParams[i]/m)*np.column_stack( ((np.zeros(np.shape(Ts[i])[0])),
                                                                 Ts[i][:,1:]))
         return np.array(Theta_grads)
@@ -188,7 +188,6 @@ class NeuralNet:
     
     def packThetas(self, T_list):
         #return np.concatenate(  (np.ndarray.flatten(Theta1), np.ndarray.flatten(Theta2)) , axis = 0)
-
         return np.concatenate( [np.ndarray.flatten(Ti) for Ti in T_list] , axis=0)
     
     def regGradientWithCost_1D(self, T1D, X, y, regParams):
@@ -206,9 +205,9 @@ class NeuralNet:
         ''' TODO - see if packing and unpacking gives us the same Thetas'''
         X = self.trainData[0]
         y = self.trainData[1]
-        J, Thetas_expanded = fmincg(lambda(T1D) : self.regGradientWithCost_1D(T1D, X, y, regParams),
+        Thetas_expanded, fX = fmincg(lambda(T1D) : self.regGradientWithCost_1D(T1D, X, y, regParams),
                                          Thetas_expanded, MaxIter=200)
-        self.Thetas = self.packThetas(Thetas_expanded)
+        self.Thetas = self.unpackTheta(Thetas_expanded)
         
         print self.ReportLogLossScore()
     
@@ -253,33 +252,47 @@ class NeuralNet:
         Theta1, Theta2 = self.Thetas
         nRow1, nCol1 = np.shape(Theta1)
         nRow2, nCol2 = np.shape(Theta2)
-        regParams = [4.0]*2
-        DEL = 0.000001
+        regParams = [100000.0]*2
+        DEL = 0.000000001
         diff_error = 0.0
-#        for r in range(nRow1):
-#            for c in range(nCol1):
-#                print '(r,c)=(%d,%d)' % (r,c)
-#                J_before, G_before = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
-#                self.Thetas[0][r,c] += DEL
-#                J_after, G_after = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
-#                #G_before[0][r,c] += (J_after-J_before)/DEL
-#                diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
-#                print G_before[0][r,c]
-#                print G_after[0][r,c]
-#                print (J_after-J_before)/DEL
-#                print 'Accumulated Error in theta 1 = ', diff_error
+        finiteDiffs_grad1 = np.zeros_like(Theta1)
+        
+        Grad = self.regGradient(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+        Grad1 = Grad[0]
+        Grad2 = Grad[1]
+        
+        for r in range(nRow1):
+            for c in range(nCol1):
+                print '(r,c)=(%d,%d)' % (r,c)
+                J_before = self.regCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+                self.Thetas[0][r,c] += DEL
+                J_after = self.regCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+                #G_before[0][r,c] += (J_after-J_before)/DEL
+                #diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
+                #print G_before[0][r,c]
+                #print G_after[0][r,c]
+                finiteDiffs_grad1[r,c] = (J_after-J_before)/DEL
+                #print 'Accumulated Error in theta 1 = ', diff_error
+        finiteDiffs_grad2 = np.zeros_like(Theta2)
         for r in range(nRow2):
             for c in range(nCol2):
                 print '(r,c)=(%d,%d)' % (r,c)
-                J_before, G_before = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+                J_before = self.regCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
                 self.Thetas[1][r,c] += DEL
-                J_after, G_after = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+                J_after = self.regCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
                 #G_before[0][r,c] += (J_after-J_before)/DEL
-                diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
-                print G_before[1][r,c]
-                print G_after[1][r,c]
-                print (J_after-J_before)/DEL
-                print 'Accumulated Error in theta 2= ', diff_error
+                #diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
+                #print G_before[1][r,c]
+                #print G_after[1][r,c]
+                finiteDiffs_grad2[r,c] =  (J_after-J_before)/DEL
+                #print 'Accumulated Error in theta 2= ', diff_error
+        print Grad2 - finiteDiffs_grad2
+        print Grad1 - finiteDiffs_grad1
+        
+        print 'Difference in Grad1', np.linalg.norm(Grad1 - finiteDiffs_grad1)
+        print 'Difference in Grad2', np.linalg.norm(Grad2 - finiteDiffs_grad2)
+        print np.max(np.abs(Grad1 - finiteDiffs_grad1))
+        print np.max(np.abs(Grad2 - finiteDiffs_grad2))
         
         
 def testNeuralNet():
@@ -292,11 +305,11 @@ def testNeuralNet():
 
 def main():
     nn = NeuralNet(trainingData = 'DIGITS',
-                   hiddenLayersSize=[200]*2, 
+                   hiddenLayersSize=[100]*2, 
                  activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
-    #nn.train(maxNumIts=10000,regParams=[0.1]*3)
-    nn.train_cg(regParams=[0.1]*3)
+    nn.train(maxNumIts=10000,regParams=[0.1]*3)
+    #nn.train_cg(regParams=[0.1]*3)
     print [np.shape(i) for i in nn.trainData]
     #nn.test_loadSampleThetas()
     #print(nn.trainData[1] )
@@ -305,5 +318,5 @@ def main():
 
     
 if __name__ == "__main__":
-    testNeuralNet()
-    #main()
+    #testNeuralNet()
+    main()
