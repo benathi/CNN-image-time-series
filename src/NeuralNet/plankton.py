@@ -88,14 +88,11 @@ def loadData():
 
 def runNeuralNet():
     nn = NeuralNet.NeuralNet(trainingData='PLANKTON',
-                             hiddenLayersSize=[239,239], 
+                             hiddenLayersSize=[239,239],
                  activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
     nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
     #nn.train_cg(regParams=[0.01]*3)
-
-
-# define the log loss metric
 
 def main():
     #loadData()
