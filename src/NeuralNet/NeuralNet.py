@@ -98,13 +98,10 @@ class NeuralNet:
                 print 'Unsupported Activation Function:', a
                 print 'Dictionary of Supported Functions:', self.activationDicts
     
-    def regCost(self, Thetas1D, X, y, regParams):
-        T_list = self.unpackTheta(Thetas1D)
-        return self.regCost_LogLoss(T_list, X, y, regParams);
-    def regGradient(self, Thetas1D, X, y, regParams):
-        T_list = self.unpackTheta(Thetas1D)
-        #print 'Len of Gradient ', len(T_list)
-        return self.packThetas(self.regGradient_LogLoss(T_list, X, y, regParams))
+    def regCost(self, Thetas, X, y, regParams):
+        return self.regCost_LogLoss(Thetas, X, y, regParams);
+    def regGradient(self, Thetas, X, y, regParams):
+        return self.regGradient_LogLoss(Thetas, X, y, regParams)
     
     def regGradientWithCost(self, Ts, X, y, regParams):
         #return self.regGradientWithCost_LogLoss(X=self.trainData[0], y=self.trainData[1],
@@ -197,12 +194,17 @@ class NeuralNet:
         print 'Training with Conjugate Gradient'
         Thetas_expanded = self.packThetas(self.Thetas)
         #print Thetas_expanded
+        # Debug here
+
+        print "no error? - norm looks okay"
+        
         ''' TODO - see if packing and unpacking gives us the same Thetas'''
         X = self.trainData[0]
         y = self.trainData[1]
-        Thetas_expanded, _ = opt.fmin_cg(lambda(T) : self.regCost(T, X, y, regParams), 
-                     Thetas_expanded, 
-                     lambda(T) : self.regGradient(T, X, y, regParams))
+        Thetas_expanded, _ = opt.fmin_cg(
+                                         lambda(T1D) : self.regCost(self.unpackTheta(T1D), X, y, regParams), 
+                                         Thetas_expanded, 
+                                         lambda(T1D) : self.packThetas(self.regGradient(self.unpackTheta(T1D), X, y, regParams)))
         self.Thetas = self.packThetas(Thetas_expanded)
         print self.ReportLogLossScore()
     
@@ -241,19 +243,31 @@ class NeuralNet:
         Theta2 = np.loadtxt(os.path.join( current_folder_path, 
                                           '../../data/digits/digits_Theta2.txt'), delimiter=',')
         self.Thetas = [Theta1, Theta2]
-        
+    
+    def testGradientFiniteDiff(self):
+        Theta1, Theta2 = self.Thetas
         nRow1, nCol1 = np.shape(Theta1)
         nRow2, nCol2 = np.shape(Theta2)
+        regParams = [0.0]*2
         DEL = 0.000001
         diff_error = 0.0
         for r in range(nRow1):
             for c in range(nCol1):
                 print '(r,c)=(%d,%d)' % (r,c)
-                J_before, G_before = self.regGradientWithCost(X=self.trainData[0], y=self.trainData[1])
+                J_before, G_before = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
                 self.Thetas[0][r,c] += DEL
-                J_after, G_after = self.regGradientWithCost(X=self.trainData[0], y=self.trainData[1])
-                diff_error += ( (J_after-J_before)/DEL - G_before[0][r,c] )**2
+                J_after, G_after = self.regGradientWithCost(self.Thetas, X=self.trainData[0], y=self.trainData[1], regParams=regParams)
+                G_before[0][r,c] += (J_after-J_before)/DEL
+                diff_error += np.linalg.norm(G_before[0]-G_after[0]) + np.linalg.norm(G_before[1]-G_after[1])
                 print 'Accumulated Error = ', diff_error
+        
+        
+def testNeuralNet():
+    nn = NeuralNet(trainingData = 'DIGITS',
+                   hiddenLayersSize=[3],
+                   activationFunctions=['sigmoid']*2)
+    print [np.shape(ob) for ob in nn.Thetas]
+    nn.testGradientFiniteDiff()
 
 
 def main():
@@ -271,4 +285,5 @@ def main():
 
     
 if __name__ == "__main__":
-    main()
+    testNeuralNet()
+    #main()

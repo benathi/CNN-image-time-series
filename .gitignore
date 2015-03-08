@@ -3,3 +3,5 @@
 data/*
 *.p
 .DS_STORE
+
+src/NeuralNet/testfunction.py
