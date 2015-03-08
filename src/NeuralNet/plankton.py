@@ -88,15 +88,11 @@ def loadData():
 
 def runNeuralNet():
     nn = NeuralNet.NeuralNet(trainingData='PLANKTON',
-                             hiddenLayersSize=[59], 
+                             hiddenLayersSize=[239,239], 
                  activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
     nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
     #nn.train_cg(regParams=[0.01]*3)
-    #print [np.shape(i) for i in nn.trainData]
-    #nn.test_loadSampleThetas()
-    #print(nn.trainData[1])
-    #print(nn.classify(nn.trainData[0]))
 
 
 # define the log loss metric

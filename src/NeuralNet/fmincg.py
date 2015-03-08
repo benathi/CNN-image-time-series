@@ -73,8 +73,15 @@ def generalizedDot(df2, s):
     return d2
 
 def update(Thetas, z, s):
+    #if isinstance(Thetas, np.ndarray) and isinstance(s, np.ndarray) and len(Thetas) == len(s):
     for _j in range(np.shape(Thetas)[0]):
+        #if isinstance(Thetas[_j], np.ndarray) and isinstance(s[_j], np.ndarray):
+        prevShape = np.shape(Thetas[_j])
         Thetas[_j] += z*s[_j]
+        if not prevShape == np.shape(Thetas[_j]):
+            print 'Error!'
+    #else:
+    #    print 'Error!!'
 
 def fmincg(f, X, **args):
     Thetas = np.copy(X)
@@ -90,11 +97,11 @@ def fmincg(f, X, **args):
     RATIO = 100.0
     
     red=1.0
-    S=['Iteration']
+    #S=['Iteration']
     
     i = 0
     ls_failed = 0
-    fX = []
+    fX = [100]
     f1, df1 = f(Thetas)
     print f1, "f1"
     i += (length<0)
@@ -109,13 +116,10 @@ def fmincg(f, X, **args):
         Thetas0 = np.copy(Thetas)
         f0 = f1
         df0 = np.copy(df1)
-        #print df1
-        #print z1*s
-        #update(Thetas, z1, s)
-        for _j in range(np.shape(Thetas)[0]):
-            Thetas[_j] += z1*s[_j]
+        update(Thetas, z1, s)
+        #for _j in range(np.shape(Thetas)[0]):
+        #    Thetas[_j] += z1*s[_j]
         f2, df2 = f(Thetas)
-        print 'Iteration %d. Cost=\t%f' % (i, f2)
         i += (length < 0)
         d2 = generalizedDot(df2,s)
         f3 = f1
@@ -145,9 +149,9 @@ def fmincg(f, X, **args):
                 #print d2, "d2"
                 z2 = max(min(z2, INT*z3), (1.0-INT)*z3)
                 z1 += z2
-                for _j in range(np.shape(Thetas)[0]):
-                    Thetas[_j] += z2*s[_j]
-                #update(Thetas, z2, s)
+                #for _j in range(np.shape(Thetas)[0]):
+                #    Thetas[_j] += z2*s[_j]
+                update(Thetas, z2, s)
                 f2, df2 = f(Thetas)
                 M -= 1
                 i += (length<0)
@@ -191,9 +195,9 @@ def fmincg(f, X, **args):
             d3 = d2
             z3 = -z2
             z1 += z2
-            for _j in range(np.shape(Thetas)[0]):
-                Thetas[_j] += z2*s[_j]
-            #update(Thetas, z2, s)
+            #for _j in range(np.shape(Thetas)[0]):
+            #    Thetas[_j] += z2*s[_j]
+            update(Thetas, z2, s)
             f2, df2 = f(Thetas)
             M -= 1
             i += (length<0)
@@ -206,8 +210,10 @@ def fmincg(f, X, **args):
             f1 = f2
             #fX = [fX.T, f1].T
             fX.append(f1)
+            print 'Iteration %d. Cost=\t%f. Decreased %f Percent' % (i, f1, 100*(fX[-2]-fX[-1])/fX[-1])
             #s = (np.dot(df2.T , df2) - np.dot(df1.T,df2))/ (np.dot(np.dot(df1.T,df1),s) ) - df2
             _mult = ( generalizedNorm(df2) - generalizedDot(df1, df2) )/generalizedNorm(df1)
+            #print 'Multiplier = ', _mult
             for _j in range(np.shape(s)[0]):
                 s[_j] *= _mult
                 s[_j] -= df2[_j]

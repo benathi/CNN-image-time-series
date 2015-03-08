@@ -210,7 +210,7 @@ class NeuralNet:
                                          self.Thetas, MaxIter=200)
         #self.Thetas = self.unpackTheta(Thetas_expanded)
         self.Thetas = Thetas_expanded # modify
-        print self.ReportLogLossScore()
+        print 'Log Loss Score (Training Set) = ', self.ReportLogLossScore()
     
     def hypothesis(self, X):
         h = np.array(X) # deep copy
@@ -301,21 +301,18 @@ def testNeuralNet():
                    hiddenLayersSize=[3],
                    activationFunctions=['sigmoid']*2)
     print [np.shape(ob) for ob in nn.Thetas]
-    #nn.testGradientFiniteDiff()
+    nn.testGradientFiniteDiff()
     #print 'norm of diff', np.linalg.norm(nn.Thetas[1] - nn.unpackTheta(nn.packThetas(nn.Thetas))[1] )
     #nn.train_cg()
 
 def main():
     nn = NeuralNet(trainingData = 'DIGITS',
-                   hiddenLayersSize=[25], 
-                 activationFunctions=['sigmoid']*2)
+                   hiddenLayersSize=[25,25], 
+                 activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
     #nn.train(maxNumIts=10000,regParams=[0.1]*3)
-    nn.train_cg(regParams=[0.1]*3)
+    nn.train_cg(regParams=[0.1]*4)
     print [np.shape(i) for i in nn.trainData]
-    #nn.test_loadSampleThetas()
-    #print(nn.trainData[1] )
-    #print(nn.classify(nn.trainData[0]))
     print np.sum((nn.data_labels != nn.classify(nn.trainData[0])))/(1.0*nn.numInputs)
 
     
