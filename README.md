@@ -1,7 +1,27 @@
 Repository for Deep Learning Project for Image Recognition
 ==============
 
+----
+Bare Minimum
+----
+Can we reduce CNN training effort by a novel proprocessing? : Traditionally only affine / distortion transformation for data augmentation. 
 
+1. Visualization - Data Exploration / Understanding the success of CNN for plankton/galaxy dataset:
+    - traditional dataset has been pretty well explored in terms of visualization
+    - (inspired by successes of CNN for plankton/galaxy kaggle competition) Visualize hidden layer for model trained by plankton data / galaxy data - using deconvnet
+    - If (2) works Visualizing hidden layer for the model trained with original data versus the model trained with reduced data. Giving reasoning why dimensional reduction works (or not)
+
+2. Explored dimension reduction by the method presented in 'Learning Transformation for Clustering and Classification'
+    - This paper has explored dimensional reduction using subspace transformation and use nearst neighbor/[] to perform image classification. (face clustering, motion segmentation)
+    - Question: Can this method be used as a preprocessing step for CNN? (transform original data to reduced data)
+    - Effort:
+
+
+--- Extension ---
+3. Boosting CNN
+    - Boost CNN (AdaBoost) and visualize hidden layer
+    - Challenge: The number of parameters can be very large for multiple CNNs. Extremely nontrivial if we can't fit the parameters in GPU memory.
+    - 
 
 ----
 Research Focus
