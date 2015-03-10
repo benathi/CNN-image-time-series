@@ -12,7 +12,7 @@ Research Focus
 2. Visualize hidden layers for boosted CNNs
     Concern: there might not be enough differences between each CNN. Will the result be revealing? the subsequent CNNs are essentially trained 
 
-3. 
+3. Maybe studying autoencoder for Plankton or galaxy dataset? Not very novel but a baby project
 
 
 ----
