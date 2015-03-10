@@ -1,6 +1,32 @@
 Repository for Deep Learning Project for Image Recognition
 ==============
 
+
+
+----
+Research Focus
+---- 
+1. Dimensional reduction / subspace projection as a preprocessing for neural network
+    Concern: what if the pre-processed data performs so poorly compared using original data
+
+2. Visualize hidden layers for boosted CNNs
+    Concern: there might not be enough differences between each CNN. Will the result be revealing? the subsequent CNNs are essentially trained 
+
+3. 
+
+
+----
+Discarded ideas
+----
+1. Exploring the hidden layer for rotational invariant training data
+    - This has been done by Lenc K. and Vadaldi A.
+    - Question: Can we apply a method to an existing dataset? (galaxy and plankton are rotationally invariant data)
+2. 
+
+
+
+
+
 Reference Research Papers
 
 [0]He Kaiming et at.
@@ -49,10 +75,8 @@ Possible Research Agendas
 3. Neural Network Tweaking
     - Activation function
       - learned the rectifier unit 
-      - 
   
 4. Understanding neural network
-    - 
 
 5. Rotation: 
  - what property of neural network can make it invariant to rotation
@@ -68,6 +92,11 @@ Code for deconvolutioning neural network?
 
 Data:
 Galaxy Data, Kaggle Plankton Competition http://www.kaggle.com/c/datasciencebowl
+MNIST
+CIFAR-10, CIFAR-100
+Caltech 101
+Caltech 256
+SVHN : Street View House Number
 
 
 http://www.matthewzeiler.com/pubs/cvpr2010/cvpr2010.pdf
