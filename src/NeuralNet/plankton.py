@@ -39,11 +39,10 @@ import NeuralNet
 
 def loadData():
     print 'Loading Plankton Data'
-    maxPixel = 25
+    maxPixel = 28
     imageSize = maxPixel*maxPixel
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    #dataPath = '/Users/ben/Kaggle/Plankton/Data'
-    dataPath = '/Users/Shared/DeepLearningProject/data'
+    dataPath = '../../data/plankton'
     directory_names = list(set(glob.glob(os.path.join(dataPath,"train", "*")))\
                            .difference(set(glob.glob(os.path.join(dataPath,"train","*.*")))))
     m = 0
@@ -58,7 +57,7 @@ def loadData():
     
     numFeatures = imageSize + 2 # +2 for width and height
     X = np.empty((m, numFeatures))
-    Y_dict = {}
+    Y_info = []
     labelMapText = {}
     Y = np.empty((m))
     i = -1
@@ -80,24 +79,73 @@ def loadData():
             X[i,imageSize+1] = np.shape(image)[1]
             Y[i] = classIndex
             shortFileName = re.match(r'.*/(.*)', filename).group(1)
-            Y_dict[i] = (shortFileName, classIndex, className)
+            Y_info.append( (shortFileName, classIndex, className) )
         labelMapText[classIndex] = (className, numInstancesPerClass)
+    Y_info = np.array(Y_info)
     print 'Done Loading Plankton Data'
-    pickle.dump( (X, Y, Y_dict, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain.p'), 'wb'))
+    print 'Dumping Data to Pickle File'
+    ''' 
+    Y is a label in number
+    Y_info is a dictionary mapping index to input information: filename, classIndex, className
+    labelMapText maps a class index to class name (text)
+    '''
+    pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain.p'), 'wb'))
     print 'Done dumping to pickle file'
+
+def loadDataSplitted_LeNetFormat():
+    current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    X , Y, Y_info, classDict =  \
+    pickle.load( open(os.path.join(current_folder_path,
+                                           '../../data/planktonTrain.p'), 'rb'))
+    X = 255.0 - X
+    X /= 255.0
+    m = np.shape(X)[0]
+    print 'Input Size = ', m
+    
+    numPixels = 28*28
+    # Create train/validation/test sets
+    randPermutation = np.random.permutation(m)
+    X = X[randPermutation,:28*28]
+    Y = Y[randPermutation]
+    Y_info = Y_info[randPermutation]
+    
+    train_factor = 0.60
+    cv_factor = 0.20
+    index_endTrain = (int(train_factor*m)/500)*500
+    X_train = X[:index_endTrain]
+    Y_train = Y[:index_endTrain]
+    index_endCv = (int( (train_factor+cv_factor)*m )/500)*500
+    X_cv = X[index_endTrain:index_endCv]
+    Y_cv = Y[index_endTrain:index_endCv]
+    
+    index_endTest = (m/500)*500  # a quick hack
+    X_test = X[index_endCv:index_endTest]
+    Y_test = Y[index_endCv:index_endTest]
+    print 'Done Splitting Data to Train/CV/Test'
+    return ( (X_train, Y_train),
+             (X_cv, Y_cv),
+             (X_test, Y_test) )
+
 
 def runNeuralNet():
     nn = NeuralNet.NeuralNet(trainingData='PLANKTON',
-                             hiddenLayersSize=[239,239],
+                             hiddenLayersSize=[59,59],
                  activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
     nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
     #nn.train_cg(regParams=[0.01]*3)
 
 def main():
-    #loadData()
-    runNeuralNet()
-
+    loadData()
+    #runNeuralNet()
+    train, cv, test = loadDataSplitted_LeNetFormat()
+    print type(train)
+    print np.shape(train[0])
+    print np.shape(train[1])
+    print np.shape(cv[0])
+    print np.shape(cv[1])
+    print np.shape(test[0])
+    print np.shape(test[1])
 
 if __name__ == "__main__":
     main()

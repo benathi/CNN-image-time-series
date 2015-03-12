@@ -141,19 +141,27 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
 
     rng = numpy.random.RandomState(23455)
 
-    datasets = load_data(dataset)
+    ''' Ben A: Change data to Plankton Data'''
+    datasets = load_data('plankton')
+    #datasets = load_data(dataset)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
     test_set_x, test_set_y = datasets[2]
 
+    ''' Ben A: DEBUG '''
+    print 'train_set_x shape', train_set_x.get_value(borrow=True).shape
+
     # compute number of minibatches for training, validation and testing
     n_train_batches = train_set_x.get_value(borrow=True).shape[0]
+    #print n_train_batches # multiple of 500 for MNIST
     n_valid_batches = valid_set_x.get_value(borrow=True).shape[0]
     n_test_batches = test_set_x.get_value(borrow=True).shape[0]
-    n_train_batches /= batch_size
-    n_valid_batches /= batch_size
-    n_test_batches /= batch_size
+    print 'Data Size: (Train,CV,Test) = (%d,%d,%d)' % (n_train_batches, n_valid_batches, n_test_batches)
+    n_train_batches = n_train_batches/batch_size if n_train_batches % batch_size == 0 else 1 + n_train_batches/batch_size
+    n_valid_batches = n_valid_batches/batch_size if n_valid_batches % batch_size == 0 else 1 + n_valid_batches/batch_size
+    n_test_batches = n_test_batches/batch_size if n_test_batches % batch_size == 0 else 1 + n_test_batches/batch_size
+    print 'Number of Batches: (Train,CV,Test) = (%d,%d,%d)' % (n_train_batches, n_valid_batches, n_test_batches)
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
@@ -213,7 +221,8 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
     )
 
     # classify the values of the fully-connected sigmoidal layer
-    layer3 = LogisticRegression(input=layer2.output, n_in=500, n_out=10)
+    layer3 = LogisticRegression(input=layer2.output, n_in=500, n_out=121)
+    ''' Ben A: changed nout from 10 to 121 '''
 
     # the cost we minimize during training is the NLL of the model
     cost = layer3.negative_log_likelihood(y)
