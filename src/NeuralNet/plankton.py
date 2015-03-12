@@ -18,7 +18,7 @@ warnings.filterwarnings("ignore")
 import inspect
 import re
 import pickle
-import NeuralNet
+
 # get the classnames from the directory structure
 
 
@@ -116,6 +116,7 @@ def loadDataSplitted_LeNetFormat():
 
 
 def runNeuralNet():
+    import NeuralNet
     nn = NeuralNet.NeuralNet(trainingData='PLANKTON',
                              hiddenLayersSize=[59,59],
                  activationFunctions=['sigmoid']*3)
