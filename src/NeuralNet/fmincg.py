@@ -54,7 +54,6 @@ import math
 import cmath
 import sys
 from scipy.optimize._tstutils import f2
-from test.test_userdict import d2
 
 def sToSflat(s):
     s_flat = []
