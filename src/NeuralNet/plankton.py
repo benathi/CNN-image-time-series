@@ -134,19 +134,94 @@ def sanitycheck():
     print X
     print Y
 
+def loadReportData():
+    print 'Loading Plankton Testing Data'
+    maxPixel = 28
+    imageSize = maxPixel*maxPixel
+    current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    dataPath = '../../data/plankton/test'
+    m = 0
+    for filename in glob.glob(os.path.join(dataPath, '*.jpg')):
+        if filename[-4:] != ".jpg":
+            continue
+        m += 1
+    
+    print 'Number of Inputs = %d' % (m)
+    numFeatures = imageSize + 2 # +2 for width and height
+    XReport = np.empty((m, numFeatures))
+    Y_infoName = []
+    i = -1
+    for filename in glob.glob(os.path.join(dataPath, '*.jpg')):
+        if filename[-4:] != ".jpg":
+            continue
+        i += 1
+        image = imread(filename, as_grey=True)
+        XReport[i,imageSize] = np.shape(image)[0]
+        XReport[i,imageSize+1] = np.shape(image)[1]
+        image = resize(image, (maxPixel, maxPixel))
+        XReport[i,0:imageSize] = np.reshape(image, (1,imageSize))   
+        shortFileName = re.match(r'.*/(.*)', filename).group(1)
+        #print shortFileName
+        Y_infoName.append( (shortFileName) )
+        #print Y_infoName
+    XReport = XReport[:28*28]
+    XReport = 1.0 - XReport         
+    Y_infoName = np.array(Y_infoName)
+    print 'Done Loading Plankton Data'
+    
+    probMatrix = getProbMatrix(XReport)
+    current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    _ , _, _, classDict =  \
+    pickle.load( open(os.path.join(current_folder_path,
+                                           '../../data/planktonTrain.p'), 'rb'))
+    generateSubmissionFile(probMatrix, classDict, Y_infoName)
+
+def getProbMatrix(XReport):
+    # TODO - implement
+    pass
+
+def generateSubmissionFile(probMatrix, classDict, Y_info):
+    import csv
+    print 'Generating Submission File'
+    headerArray = ['image']
+    for i in range(121):
+        headerArray.append(classDict[i][0])
+    with open('results.csv', 'wb') as csvfile:
+        writeResults = csv.writer(csvfile, delimiter=',')
+        writeResults.writerow(headerArray)
+        for i, filename in enumerate(Y_info):
+            probMatrix[i] /= np.mean(probMatrix)
+            probTemp = np.concatenate(([filename],probMatrix[i]),axis = 0)
+            #print probTemp
+            writeResults.writerow(probTemp)
+        
+    '''
+    print headerArray
+    for i,filename in enumerate(Y_info):
+        print filename
+        print i
+        # write filename (no new line)
+        # write probMatrix[i] (whole line, csv) + newline
+    print 'Now appending to Probability Matrix'
+    '''
+    
+    
+    
 
 def main():
-    #loadData()
+    loadData()
     #sanitycheck()    
     #runNeuralNet()
-    train, cv, test = loadDataSplitted_LeNetFormat()
-    print type(train)
-    print np.shape(train[0])
-    print np.shape(train[1])
-    print np.shape(cv[0])
-    print np.shape(cv[1])
-    print np.shape(test[0])
-    print np.shape(test[1])
+    #loadReportData()
+    #train, cv, test = loadDataSplitted_LeNetFormat()
+    #print type(train)
+    #print np.shape(train[0])
+    #print np.shape(train[1])
+    #print np.shape(cv[0])
+    #print np.shape(cv[1])
+    #print np.shape(test[0])
+    #print np.shape(test[1])
+    pass
 
 if __name__ == "__main__":
     main()
