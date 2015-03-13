@@ -168,13 +168,14 @@ def loadReportData():
     XReport = 1.0 - XReport         
     Y_infoName = np.array(Y_infoName)
     print 'Done Loading Plankton Data'
+    return (XReport, Y_infoName)
     
-    probMatrix = getProbMatrix(XReport)
-    current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    _ , _, _, classDict =  \
-    pickle.load( open(os.path.join(current_folder_path,
-                                           '../../data/planktonTrain.p'), 'rb'))
-    generateSubmissionFile(probMatrix, classDict, Y_infoName)
+    #probMatrix = getProbMatrix(XReport)
+    #current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    #_ , _, _, classDict =  \
+    #pickle.load( open(os.path.join(current_folder_path,
+    #                                       '../../data/planktonTrain.p'), 'rb'))
+    #generateSubmissionFile(probMatrix, classDict, Y_infoName)
 
 def getProbMatrix(XReport):
     # TODO - implement
