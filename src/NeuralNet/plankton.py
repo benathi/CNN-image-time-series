@@ -61,10 +61,11 @@ def loadData():
             i += 1
             numInstancesPerClass += 1
             image = imread(filename, as_grey=True)
-            image = resize(image, (maxPixel, maxPixel))
-            X[i,0:imageSize] = np.reshape(image, (1,imageSize))
+            ## Record image size here (28 by 28)
             X[i,imageSize] = np.shape(image)[0]
             X[i,imageSize+1] = np.shape(image)[1]
+            image = resize(image, (maxPixel, maxPixel))
+            X[i,0:imageSize] = np.reshape(image, (1,imageSize))
             Y[i] = classIndex
             shortFileName = re.match(r'.*/(.*)', filename).group(1)
             Y_info.append( (shortFileName, classIndex, className) )
@@ -85,8 +86,7 @@ def loadDataSplitted_LeNetFormat():
     X , Y, Y_info, classDict =  \
     pickle.load( open(os.path.join(current_folder_path,
                                            '../../data/planktonTrain.p'), 'rb'))
-    X = 255.0 - X
-    X /= 255.0
+    # The pixel values are already from 0 to 1
     m = np.shape(X)[0]
     print 'Input Size = ', m
     
@@ -94,9 +94,9 @@ def loadDataSplitted_LeNetFormat():
     # Create train/validation/test sets
     randPermutation = np.random.permutation(m)
     X = X[randPermutation,:28*28]
+    X = 1.0 - X
     Y = Y[randPermutation]
     Y_info = Y_info[randPermutation]
-    
     train_factor = 0.60
     cv_factor = 0.20
     index_endTrain = (int(train_factor*m)/500)*500
@@ -123,9 +123,21 @@ def runNeuralNet():
     print [np.shape(ob) for ob in nn.Thetas]
     nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
     #nn.train_cg(regParams=[0.01]*3)
+    
+def sanitycheck():
+    current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    X , Y, Y_info, classDict =  \
+    pickle.load( open(os.path.join(current_folder_path,
+                                           '../../data/planktonTrain.p'), 'rb'))  
+    print classDict  
+    print Y_info
+    print X
+    print Y
+
 
 def main():
-    loadData()
+    #loadData()
+    #sanitycheck()    
     #runNeuralNet()
     train, cv, test = loadDataSplitted_LeNetFormat()
     print type(train)
