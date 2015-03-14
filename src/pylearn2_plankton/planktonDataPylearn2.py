@@ -38,8 +38,8 @@ class PlanktonData(DenseDesignMatrix):
             print 'Loading Plankton Testing Data'
             dataPath = '../../data/plankton/test'
             m = 0
-            MAX = 600
-            fileList = glob.glob(os.path.join(dataPath, '*.jpg'))[:MAX]
+            #MAX = 600
+            fileList = glob.glob(os.path.join(dataPath, '*.jpg'))#[:MAX]
             for filename in fileList:
                 if filename[-4:] != ".jpg":
                     continue
