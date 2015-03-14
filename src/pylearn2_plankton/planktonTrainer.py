@@ -13,12 +13,12 @@ def train():
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     filePath = os.path.join(current_folder_path, 'plankton_conv.yaml')
     print 'Reading YAML Configurations'
-    train = open(filePath,'r').read()
+    trainObj = open(filePath,'r').read()
     print 'Loading Train Model'
-    train = yaml_parse.load(train)
+    trainObj = yaml_parse.load(trainObj)
     print 'Looping'
-    train.main_loop()
-    return train
+    trainObj.main_loop()
+    return trainObj
 
 def loadReportData():
     from skimage.io import imread

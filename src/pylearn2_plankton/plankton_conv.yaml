@@ -69,7 +69,7 @@
                     N: 10
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
-                    max_epochs: 1
+                    max_epochs: 200
                 },
             ]
         },
@@ -78,7 +78,8 @@
         [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
              save_path: "./plankton_conv_model.pkl"
-        }, !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+        }, 
+        !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
             start: 1,
             saturate: 10,
             final_momentum: .99
