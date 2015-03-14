@@ -185,7 +185,7 @@ def MakeCsv(model_path='plankton_conv_maxout_model.pkl'):
 
 def main():
     # TODO: Take an argument as model filename
-    MakeCsv3('plankton_conv_model.pkl')
+    MakeCsv3('plankton_conv_maxout_model.pkl')
     
 if __name__ == "__main__":
     main()
