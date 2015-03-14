@@ -69,7 +69,8 @@ def generateSubmissionFile(model_path, probMatrix, class_names, Y_info):
         writeResults = csv.writer(csvfile, delimiter=',')
         writeResults.writerow(headerArray)
         for i, filename in enumerate(Y_info):
-            #probMatrix[i] /= np.sum(probMatrix[i]) # This sum is already 1
+            #print 'Sum = ', np.sum(probMatrix[i])
+            probMatrix[i] /= np.sum(probMatrix[i]) # This sum is already 1 for convnet
             probTemp = np.concatenate(([filename],probMatrix[i]),axis = 0)
             writeResults.writerow(probTemp)
     print 'Finished Generating Submission file to ', csvFileName
@@ -184,7 +185,12 @@ def MakeCsv(model_path='plankton_conv_maxout_model.pkl'):
 
 def main():
     # TODO: Take an argument as model filename
-    MakeCsv3('plankton_conv_maxout_model.pkl')
-    
+    import sys
+    try:
+        model_name = sys.argv[1]
+        print 'Loading', model_name
+        MakeCsv3(model_name)
+    except IndexError:
+        print 'Please specify model name in the argument. Eg. python Report.py plankton_conv_model.pkl'
 if __name__ == "__main__":
     main()
