@@ -25,7 +25,7 @@ import pickle
 #for i in  list(set(glob.glob(os.path.join('/Users/ben/Kaggle/Plankton/Data',"train", "*")))):
 #    print i
 
-def loadData():
+def dumpPlanktonData():
     print 'Loading Plankton Data'
     maxPixel = 28
     imageSize = maxPixel*maxPixel
@@ -72,6 +72,11 @@ def loadData():
         labelMapText[classIndex] = (className, numInstancesPerClass)
     Y_info = np.array(Y_info)
     print 'Done Loading Plankton Data'
+    print 'Start Shuffling'
+    randPermutation = np.random.permutation(m)
+    Y_info = Y_info[randPermutation]
+    X = X[randPermutation]
+    Y = Y[randPermutation]
     print 'Dumping Data to Pickle File'
     ''' 
     Y is a label in number
@@ -210,18 +215,7 @@ def generateSubmissionFile(probMatrix, classDict, Y_info):
     
 
 def main():
-    loadData()
-    #sanitycheck()    
-    #runNeuralNet()
-    #loadReportData()
-    #train, cv, test = loadDataSplitted_LeNetFormat()
-    #print type(train)
-    #print np.shape(train[0])
-    #print np.shape(train[1])
-    #print np.shape(cv[0])
-    #print np.shape(cv[1])
-    #print np.shape(test[0])
-    #print np.shape(test[1])
+    dumpPlanktonData()
     pass
 
 if __name__ == "__main__":

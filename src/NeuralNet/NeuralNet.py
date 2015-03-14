@@ -38,7 +38,7 @@ class NeuralNet:
     testData = None
     
     
-    def loadData(self, dataset='DIGITS'):
+    def dumpPlanktonData(self, dataset='DIGITS'):
         import pickle
         current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         if dataset == 'DIGITS':
@@ -76,7 +76,7 @@ class NeuralNet:
                  hiddenLayersSize=[25], 
                  activationFunctions=['sigmoid', 'sigmoid']):
         print 'Initializing Neural Network Object'
-        self.trainData = self.loadData(trainingData)
+        self.trainData = self.dumpPlanktonData(trainingData)
         print '1.Data Loaded.'
         print '2. Initializing Thetas.'
         self.numLayers = 1 + len(hiddenLayersSize)

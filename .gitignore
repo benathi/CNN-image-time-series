@@ -3,13 +3,10 @@
 data/*
 *.p
 .DS_STORE
-<<<<<<< HEAD
-
 src/NeuralNet/testfunction.py
-
 src/LeNet/octave-workspace
-=======
 *.gz
 *.pkl.gz
 *.jpg
->>>>>>> master
+*.csv
+*.pkl
