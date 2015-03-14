@@ -38,7 +38,8 @@ class PlanktonData(DenseDesignMatrix):
             print 'Loading Plankton Testing Data'
             dataPath = '../../data/plankton/test'
             m = 0
-            for filename in glob.glob(os.path.join(dataPath, '*.jpg')):
+            MAX = 600 # delete MAX
+            for filename in glob.glob(os.path.join(dataPath, '*.jpg'))[:MAX]:
                 if filename[-4:] != ".jpg":
                     continue
                 m += 1
@@ -47,7 +48,7 @@ class PlanktonData(DenseDesignMatrix):
             XReport = np.empty((m, imageSize))
             Y_infoName = []
             i = -1
-            for filename in glob.glob(os.path.join(dataPath, '*.jpg')):
+            for filename in glob.glob(os.path.join(dataPath, '*.jpg'))[:MAX]:
                 if filename[-4:] != ".jpg":
                     continue
                 i += 1

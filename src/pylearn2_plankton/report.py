@@ -99,13 +99,17 @@ def MakeCsv3(model_path='plankton_conv_maxout_model.pkl'):
     print 'Num extra = ', num_extra
     for batchIndex in range(floor_numBatches):
         print 'Batch ', batchIndex
+        _input = np.array(XReport[batchIndex*batch_size:(batchIndex+1)*batch_size],
+                          dtype=theano.config.floatX)
         probMatrix[batchIndex*batch_size:(batchIndex+1)*batch_size] = \
-            model.fprop(theano.shared(XReport[batchIndex*batch_size:(batchIndex+1)*batch_size],
+            model.fprop(theano.shared(_input,
                                    name='XReport')).eval()
+        break
     if num_extra > 0:
         print 'Extra Batch'
         lastX = np.zeros((batch_size, np.shape(XReport)[1], np.shape(XReport)[2], np.shape(XReport)[3]))
         lastX[:num_extra] = XReport[floor_numBatches*batch_size:]
+        lastX = np.array(lastX, dtype=theano.config.floatX)
         probMatrix[floor_numBatches*batch_size:] = \
             model.fprop(theano.shared(lastX,name='XReport')).eval()[:num_extra]
 
