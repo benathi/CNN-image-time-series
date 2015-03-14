@@ -104,7 +104,6 @@ def MakeCsv3(model_path='plankton_conv_maxout_model.pkl'):
         probMatrix[batchIndex*batch_size:(batchIndex+1)*batch_size] = \
             model.fprop(theano.shared(_input,
                                    name='XReport')).eval()
-        break
     if num_extra > 0:
         print 'Extra Batch'
         lastX = np.zeros((batch_size, np.shape(XReport)[1], np.shape(XReport)[2], np.shape(XReport)[3]))
