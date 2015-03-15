@@ -14,26 +14,18 @@
                      layer_name: 'h2',
                      output_channels: 64,
                      irange: .05,
-                     kernel_shape: [8, 8],
-                     pool_shape: [4, 4],
+                     kernel_shape: [10, 10],
+                     pool_shape: [5, 5],
                      pool_stride: [2, 2],
                      max_kernel_norm: 1.9365
                  }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'h3',
                      output_channels: 64,
                      irange: .05,
-                     kernel_shape: [5, 5],
-                     pool_shape: [2, 2],
+                     kernel_shape: [6, 6],
+                     pool_shape: [3, 3],
                      pool_stride: [2, 2],
                      max_kernel_norm: 1.9365
-                 }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
-                     layer_name: 'h4',
-                     output_channels: 64,
-                     irange: .05,
-                     kernel_shape: [4, 4],
-                     pool_shape: [2, 2],
-                     pool_stride: [2, 2],
-                     max_kernel_norm: 1.9365    
                  }, !obj:pylearn2.models.mlp.Softmax {
                      max_col_norm: 1.9365,
                      layer_name: 'y',
