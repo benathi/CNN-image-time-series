@@ -60,19 +60,25 @@ def loadInfoForReport():
 def generateSubmissionFile(model_path, probMatrix, class_names, Y_info):
     import csv
     print 'Generating Submission File'
-    headerArray = ['image']
+    headerArray = 'image'
     for i in range(121):
-        headerArray.append(class_names[i])
+        headerArray += ',' + class_names[i]
+    headerArray += '\n'
     csvFileName = model_path + '.csv'
-
-    with open(csvFileName, 'wb') as csvfile:
-        writeResults = csv.writer(csvfile, delimiter=',')
-        writeResults.writerow(headerArray)
-        for i, filename in enumerate(Y_info):
-            #print 'Sum = ', np.sum(probMatrix[i])
-            probMatrix[i] /= np.sum(probMatrix[i]) # This sum is already 1 for convnet
-            probTemp = np.concatenate(([filename],probMatrix[i]),axis = 0)
-            writeResults.writerow(probTemp)
+    f_csv = open(csvFileName, 'w')
+    #probMatrix = np.array(probMatrix)
+    #with open(csvFileName, 'wb') as csvfile:
+    #writeResults = csv.writer(csvfile, delimiter=',')
+    f_csv.write(headerArray)
+    for i, filename in enumerate(Y_info):
+        #probMatrix[i] /= np.sum(probMatrix[i]) # This sum is already 1 for convnet
+        f_csv.write(filename)
+        for el in probMatrix[i]:
+            f_csv.write(',' + str(el))
+        f_csv.write('\n')   
+        #probTemp = np.concatenate(([filename],probMatrix[i]),axis = 0)
+        #print probMatrix[i]
+        #writeResults.writerow(probTemp)
     print 'Finished Generating Submission file to ', csvFileName
 
 def MakeCsv3(model_path='plankton_conv_maxout_model.pkl'):
