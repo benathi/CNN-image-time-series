@@ -66,7 +66,7 @@
                 !obj:pylearn2.termination_criteria.MonitorBased {
                     channel_name: "valid_y_misclass",
                     prop_decrease: 1,
-                    N: 10
+                    N: 200
                 },
                 !obj:pylearn2.termination_criteria.EpochCounter {
                     max_epochs: 200
