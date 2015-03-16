@@ -2,7 +2,7 @@
     dataset: &train !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
         which_set: 'train',
         start: 0,
-        stop: 20000
+        stop: 25000
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 100,
@@ -62,11 +62,6 @@
                 'valid' : !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
                               which_set: 'train',
                               start: 25000,
-                              stop:  27500
-                          },
-                'test'  : !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
-                              which_set: 'train',
-                              start: 27500,
                               stop:  30000
                           }
             },
