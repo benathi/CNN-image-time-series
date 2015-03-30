@@ -2,6 +2,13 @@
 Created on Mar 13, 2015
 
 @author: benathi
+
+This script trains a model based on a yaml config and save a model file at the end.
+
+Instructions:
+python planktonTrainer.py [path to yaml config]
+For example, 
+python planktonTrainer.py yaml_configs/plankton_conv.yaml
 '''
 from pylearn2.config import yaml_parse
 import os,sys,inspect
@@ -28,7 +35,7 @@ def trainAndReport():
         print 'Loading', yaml_filename
         train(yaml_filename)
     except IndexError:
-        print 'Please specify YAML filename in the argument. Eg. python Report.py plankton_conv.yaml'
+        print 'Please specify YAML filename in the argument. Eg. python planktonTrainer.py yaml_configs/plankton_conv.yaml'
     
 
 if __name__=='__main__':

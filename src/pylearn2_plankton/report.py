@@ -3,6 +3,12 @@ Created on Mar 14, 2015
 
 @author: Ben Athiwaratkun (pa338)
 
+Explanation: This file takes a model and make predictions for 
+plankton test data. 
+
+Instructions: run with the following command
+python report.py [path of .pkl model file]
+
 '''
 #from __future__ import division
 import numpy as np
@@ -190,13 +196,12 @@ def MakeCsv(model_path='plankton_conv_maxout_model.pkl'):
     y = np.concatenate(y)
 
 def main():
-    # TODO: Take an argument as model filename
     import sys
     try:
         model_name = sys.argv[1]
         print 'Loading', model_name
         MakeCsv3(model_name)
     except IndexError:
-        print 'Please specify model name in the argument. Eg. python Report.py plankton_conv_model.pkl'
+        print 'Please specify model name in the argument. Eg. python Report.py model_files/plankton_conv_model.pkl'
 if __name__ == "__main__":
     main()
