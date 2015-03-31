@@ -163,7 +163,8 @@ def FindT(X,Y, dimsize, numIter = 200, numBatches = 10, stepsize = 0.05, gamma =
             costX = X[classindex,:]
             costSum += sum(np.linalg.svd(np.dot(globalT,costX.T ), full_matrices=False, compute_uv = False))
         
-        costvec[i] = costSum - sum(np.linalg.svd(np.dot(globalT,X.T ), full_matrices=False, compute_uv = False))
+        # Normalization
+        costvec[i] = (costSum - sum(np.linalg.svd(np.dot(globalT,X.T ), full_matrices=False, compute_uv = False)))/sum(np.linalg.svd(np.dot(globalT,X.T ), full_matrices=False, compute_uv = False))
         
         print costvec[i]
         
@@ -195,7 +196,10 @@ def main():
     X , Y, Y_info, classDict =  \
     pickle.load( open(os.path.join(current_folder_path,
                                            '../../data/planktonTrain.p'), 'rb'))
-    FindT(X,Y,50)
+    minT, globalT = FindT(X,Y,120,200,60,0.5,0.2) 
+    newX = np.dot(minT, X.T)
+    np.savetxt("XReduced", newX) 
+    
     
 if __name__ == "__main__":
     #testNeuralNet()
