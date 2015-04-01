@@ -22,7 +22,7 @@ def train(yaml_filename):
     print 'Reading YAML Configurations'
     trainObj = open(filePath,'r').read()
     print 'Loading Train Model'
-    trainObj = yaml_parse.load(trainObj)
+    trainObj = yaml_parse.load(trainObj) # serial.load_train_file('--.yaml')
     print 'Looping'
     trainObj.main_loop()
     return trainObj
