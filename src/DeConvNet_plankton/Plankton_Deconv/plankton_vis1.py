@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import cPickle
 from matplotlib import pyplot as plt
-from pylearn2.utils import serial
+
 
 # in order to import customeized classes
 parent_folder = os.path.abspath('..')
@@ -72,34 +72,34 @@ def example1():
     layer1_b = np.mean(layer1_b, axis=(1,2))
     layer2_b = np.mean(layer2_b, axis=(1,2))
     
-    return
+    
     # forward
     # filter shape is shape of layer0_w
     up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,28,28), filter_shape = (32,NUM_C,5,5),
                             poolsize = 2 , W = layer0_w, b = layer0_b, 
                             activation = activation)
                             
-    up_layer1 = CPRStage_Up( image_shape = (1,32,12,12), filter_shape = (50,32,5,5), 
+    up_layer1 = CPRStage_Up( image_shape = (1,32,12,12), filter_shape = (48,32,5,5), 
                             poolsize = 2,W = layer1_w, b = layer1_b ,
                             activation = activation)
                             
-    up_layer2 = CPRStage_Up( image_shape = (1,50,5,5), filter_shape = (64,50,5,5), 
+    up_layer2 = CPRStage_Up( image_shape = (1,48,4,4), filter_shape = (64,48,3,3), 
                             poolsize = 1,W = layer2_w, b = layer2_b ,
                             activation = activation)
     # backward
-    down_layer2 = CPRStage_Down( image_shape = (1,64,1,1), filter_shape = (50,64,5,5), 
+    down_layer2 = CPRStage_Down( image_shape = (1,64,1,1), filter_shape = (48,64,3,3), 
                                 poolsize = 1,W =layer2_w, b = layer2_b,
                                 activation = activation)
                                 
-    down_layer1 = CPRStage_Down( image_shape = (1,50,10,10), filter_shape = (32,50,5,5), 
+    down_layer1 = CPRStage_Down( image_shape = (1,48,4*2,4*2), filter_shape = (32,48,5,5), 
                                 poolsize = 2,W =layer1_w, b = layer1_b,
                                 activation = activation)
                                 
-    down_layer0 = CPRStage_Down( image_shape = (1,32,28,28), filter_shape = (NUM_C,32,5,5), 
+    down_layer0 = CPRStage_Down( image_shape = (1,32,28-4,28-4), filter_shape = (NUM_C,32,5,5), 
                                 poolsize = 2,W = layer0_w, b = layer0_b,
                                 activation = activation)
 
-
+    return # continue here
     # load sample images
     print 'Loading sample images...'
     f = open( model_directory + 'SubSet25.pkl', 'r' )
@@ -151,34 +151,5 @@ def example1():
     plt.imshow(bigmap)
     plt.show()
 
-
-'''
-Usually, a model will be trained on a gpu unit. This method should be run on it after training
-to extract numpy array values. (the extraction requires cuda, hence it needs to be run with gpu)
-After extracting, it saves the params with cPickle and we can load it directly.
-'''
-def recordModelParams(model_path= trainedModelPath + "plankton_conv_visualize_model.pkl"):
-    print 'Loading Model'
-    model = serial.load(model_path)
-    print "Done Loading Model"
-    print "Input Space:\t", model.get_input_space()
-    print "Target Space:\t", model.get_target_space() # same as get_output_space()
-    print "Monitoring Data Specs", model.get_monitoring_data_specs()
-    param_names = model.get_params()
-    param_names = [tensorVar.name for tensorVar in param_names]
-    print "Params Spec", param_names
-    layer_names = ['c2_W', 'c2_b', 'c1_W', 'c1_b', 'c0_W', 'c0_b']
-    print "type", type(param_names[0])
-    print "index of c0_W", param_names.index('c0_W')
-    # assume there are 3 layers
-    original_params = model.get_param_values()
-    params_indices = [param_names.index(_name) for _name in 
-                      layer_names]
-    print "Parameter Indices for {} is {}".format(layer_names, params_indices)
-    params = [original_params[_index] for _index in params_indices]
-    cPickle.dump(params,open(model_path + ".params", "wb"))
-    #from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
-
 if __name__ == "__main__":
-    params = recordModelParams()
     example1()
