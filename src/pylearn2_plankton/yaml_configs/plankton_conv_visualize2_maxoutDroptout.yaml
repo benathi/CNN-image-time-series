@@ -74,22 +74,15 @@
             input_include_probs: { 'c0' : .8 },
             input_scales: { 'c0': 1. }
         },
-        termination_criterion: !obj:pylearn2.termination_criteria.And {
-            criteria: [
-                !obj:pylearn2.termination_criteria.MonitorBased {
-                    channel_name: "valid_y_misclass",
-                    prop_decrease: 0.01,
-                    N: 100
-                },
-                update_callbacks: !obj:pylearn2.training_algorithms.sgd.ExponentialDecay {
-                    decay_factor: 1.00004,
-                    min_lr: .000001
-                },
-                #!obj:pylearn2.termination_criteria.EpochCounter {
-                #    max_epochs: 200
-                #}
-            ]
+        termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
+            channel_name: "valid_y_misclass",
+            prop_decrease: 0.,
+            N: 100
         },
+        update_callbacks: !obj:pylearn2.training_algorithms.sgd.ExponentialDecay {
+            decay_factor: 1.00004,
+            min_lr: .000001
+        }
     },
     extensions:
         [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
