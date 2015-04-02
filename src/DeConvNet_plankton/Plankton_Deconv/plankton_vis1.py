@@ -46,7 +46,7 @@ def example1():
     """
 
     #print "Loading model..."
-    model_file = open( trainedModelPath + "plankton_conv_visualize_model.pkl.params", 'r')
+    model_file = open( trainedModelPath + "plankton_conv_visualize_model_gpu.pkl.params", 'r')
     params = cPickle.load( model_file )
     model_file.close()
 
@@ -143,6 +143,12 @@ def example1():
     plt.imshow(bigmap)
     plt.show()
 
+
+'''
+Usually, a model will be trained on a gpu unit. This method should be run on it after training
+to extract numpy array values. (the extraction requires cuda, hence it needs to be run with gpu)
+After extracting, it saves the params with cPickle and we can load it directly.
+'''
 def recordModelParams(model_path= trainedModelPath + "plankton_conv_visualize_model.pkl"):
     print 'Loading Model'
     model = serial.load(model_path)
@@ -166,5 +172,5 @@ def recordModelParams(model_path= trainedModelPath + "plankton_conv_visualize_mo
     #from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
 
 if __name__ == "__main__":
-    params = recordModelParams()
+    #params = recordModelParams()
     example1()
