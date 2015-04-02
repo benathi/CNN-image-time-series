@@ -18,7 +18,7 @@ import numpy as np
 
 def train(yaml_filename):
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-    filePath = os.path.join(current_folder_path, 'planktonTest1_conv.yaml')
+    filePath = os.path.join(current_folder_path, yaml_filename)
     print 'Reading YAML Configurations'
     trainObj = open(filePath,'r').read()
     print 'Loading Train Model'

@@ -34,20 +34,21 @@ size_l1 = (size_l0-4)/2 # 14
 size_l2 = (size_l1-4)/2 # 5
 
 model_directory = "../cifar10_sampleCode/Example/"
+trainedModelPath = "../../pylearn2_plankton/model_files/"
 
 def activation( a ):
     return ( np.abs(a) + a ) /2 # ReLU max(0,a)
 
-def example1():
+def example1(params):
     """
     In this example, I visulize what the 3rd layer 'see' altogether.
     By set none of feature maps in 3rd layer to zero.
     """
 
-    print "Loading model..."
-    model_file = open( model_directory + 'params.pkl', 'r')
+    #print "Loading model..."
+    #model_file = open( model_directory + 'params.pkl', 'r')
     params = cPickle.load( model_file )
-    model_file.close()
+    #model_file.close()
 
     layer0_w = params[-2]
     layer0_b = params[-1]
@@ -141,12 +142,27 @@ def example1():
     plt.imshow(bigmap)
     plt.show()
 
-def loadModelParams(model_path="../../pylearn2_plankton/model_files/plankton_conv_model.pkl"):
+def loadModelParams(model_path= trainedModelPath + "plankton_conv_visualize_model.pkl"):
     print 'Loading Model'
-    from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
     model = serial.load(model_path)
     print "Done Loading Model"
+    print "Input Space:\t", model.get_input_space()
+    print "Target Space:\t", model.get_target_space() # same as get_output_space()
+    print "Monitoring Data Specs", model.get_monitoring_data_specs()
+    param_names = model.get_params()
+    print "Params Spec", param_names
+    layer_names = ['c2_W', 'c2_b', 'c1_W', 'c1_b', 'c0_W', 'c0_b']
+    print "type", type(param_names[0])
+    print "index of c0_W", param_names.index('c0_W')
+    # assume there are 3 layers
+    original_params = model.get_param_values()
+    params_indices = [param_names.index(_name) for _name in 
+                      layer_names]
+    print "Parameter Indices for {} is {}".format(layer_names, params_indices)
+    params = [original_params[_index] for _index in params_indices]
+    return params
+    #from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
 
 if __name__ == "__main__":
     params = loadModelParams()
-    #example1()
+    #example1(params)
