@@ -52,14 +52,14 @@ def loadSamplePlanktons(numSamples=100):
     return np.array(designMatrix[-numSamples:,...], dtype=np.float32)
     
 
-def example1():
+def example1(model_file_name = "plankton_conv_visualize_model.pkl.params"):
     """
     In this example, I visulize what the 3rd layer 'see' altogether.
     By set none of feature maps in 3rd layer to zero.
     """
 
     print "Loading plankton model..."
-    model_file = open( trainedModelPath + "plankton_conv_visualize_model.pkl.params", 'r')
+    model_file = open( trainedModelPath + model_file_name, 'r')
     params = cPickle.load( model_file )
     model_file.close()
 
@@ -173,5 +173,15 @@ def example1():
     plt.show()
 
 if __name__ == "__main__":
-    example1()
+    import sys
+    if len(sys.argv) >= 2:
+        try:
+            model_name = sys.argv[1]
+            print 'Loading', model_name
+            example1(model_name)
+        except IndexError:
+            print 'Please specify params filename in the argument.'
+            print 'Eg. python plankton_vis1.py plankton_conv_visualize_model.pkl.params'
+    else:
+        example1()
     
