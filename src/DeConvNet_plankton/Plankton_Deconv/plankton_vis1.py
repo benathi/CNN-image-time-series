@@ -42,14 +42,14 @@ def activation( a ):
     return ( np.abs(a) + a ) /2 # ReLU max(0,a)
 
 ''' This file is run if the pickle file does not exist '''
-def loadSampleImages(numSamples=100):
+def loadSamplePlanktons(numSamples=100):
     from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
     ds = PlanktonData(which_set='train')
     designMatrix = ds.get_data()[0] # index 1 is the label
     print "Shape of Design Matrix", np.shape(designMatrix)
     designMatrix = np.reshape(designMatrix, 
                               (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
-    return designMatrix[-numSamples:,...] #return a small batch of 1000 samples for now
+    return np.array(designMatrix[-numSamples:,...], dtype=np.float32)
     
 
 def example1():
@@ -118,7 +118,7 @@ def example1():
     #f = open( model_directory + 'SubSet25.pkl', 'r' )
     #input = cPickle.load( f )
     #f.close()
-    input = loadSampleImages()
+    input = loadSamplePlanktons()
 
     print 'Sample Images Shape', np.shape(input)
 
