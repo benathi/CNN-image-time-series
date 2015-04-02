@@ -12,6 +12,7 @@
         },
         layers: [ !obj:pylearn2.models.maxout.MaxoutConvC01B {
                      layer_name: 'c0',
+                     num_pieces: 1,
                      num_channels: 32,
                      irange: .05,
                      kernel_shape: [5, 5],
@@ -20,6 +21,7 @@
                      max_kernel_norm: 1.9365
                  }, !obj:pylearn2.models.maxout.MaxoutConvC01B {
                      layer_name: 'c1',
+                     num_pieces: 1,
                      num_channels: 48,
                      irange: .05,
                      kernel_shape: [5, 5],
@@ -29,6 +31,7 @@
                  }
                  , !obj:pylearn2.models.maxout.MaxoutConvC01B {
                      layer_name: 'c2',
+                     num_pieces: 1,
                      num_channels: 64,
                      irange: .05,
                      kernel_shape: [3, 3],
