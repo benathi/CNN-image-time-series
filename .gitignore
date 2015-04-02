@@ -10,3 +10,4 @@ src/LeNet/octave-workspace
 *.jpg
 *.csv
 *.pkl
+*.pkl.params
