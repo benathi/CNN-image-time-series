@@ -21,7 +21,9 @@ def dumpTrainDataRotated(which_set='train_rotate'):
             X = np.array(1.0 - X[:,:imageSize], dtype=np.float32)
             Xr, Yr = generateRotatedData(X,Y)
             print "Finished Rotating"
-            pickle.dump( (Xr,Yr) , open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotated.p'), 'wb'))
+            #pickle.dump( (Xr,Yr) , open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotated.p'), 'wb'))
+            np.save(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'wb'), Xr)
+            np.save(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedY.p'), 'wb'), Yr)
             print "Done dumping to file"
             
 

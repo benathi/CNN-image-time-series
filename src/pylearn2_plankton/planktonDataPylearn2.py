@@ -30,6 +30,25 @@ class PlanktonData(DenseDesignMatrix):
             for i, val in enumerate(Y):
                 Y_oneHot[i,val] = 1.0
             ''' Next: report data set '''
+        elif which_set == 'trainRotated':
+            # 0. Loading data
+            #current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+            X , Y, _, classDict =  \
+            pickle.load( open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrain.p'), 'rb'))   
+            # 1. Set class names
+            numClasses = 121  
+            classNames = []
+            for i in range(numClasses):
+                classNames.append(classDict[i][0])
+            self.class_names = classNames
+            #file_path = os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotated.p')
+            #X,Y = pickle.load(open(file_path, 'rb'))
+            X = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'rb'))
+            Y = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedY.p'), 'rb'))
+            Y_oneHot = np.zeros((np.shape(X)[0], numClasses))
+            for i, val in enumerate(Y):
+                Y_oneHot[i,val] = 1.0
+            ''' Next: report data set '''
         elif which_set == 'report':
             print 'Loading Report Data'
             from skimage.io import imread
