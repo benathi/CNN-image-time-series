@@ -1,6 +1,6 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
-        which_set: 'train',
+        which_set: 'trainRotated',
         start: 0,
         stop: 300000
     },
@@ -61,7 +61,7 @@
         monitoring_dataset:
             {
                 'valid' : !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
-                              which_set: 'train',
+                              which_set: 'trainRotated',
                               start: 300000,
                               stop:  360000
                           }
