@@ -150,6 +150,7 @@ class CPRStage_Down( object ):
         else:
           up_pooled_out = up_pooled_out.reshape( [1] + list(up_pooled_out.shape))
 
+        #print np.shape(up_pooled_out)
         if up_pooled_out.dtype == theano.config.floatX:
             conv_out = self.conv( up_pooled_out )
         else:
