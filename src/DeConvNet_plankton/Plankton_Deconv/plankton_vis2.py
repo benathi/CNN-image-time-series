@@ -1,3 +1,9 @@
+'''
+Created on Apr 1, 2015
+
+@author: ben
+'''
+
 #-*- coding: utf-8 -*- 
 import os
 import sys
@@ -9,7 +15,7 @@ from matplotlib import pyplot as plt
 from heapq import *
 
 # in order to import customeized classes
-parent_folder = os.path.abspath('../..')
+parent_folder = os.path.abspath('..')
 class_path = parent_folder + '/' + 'DeConvNet'
 if class_path not in sys.path:
     sys.path.append( class_path )
@@ -21,6 +27,9 @@ if class_path not in sys.path:
 from CPRStage import CPRStage_Up,CPRStage_Down
 from utils import tile_raster_images
 from Layers import ConvPoolLayer,relu_nonlinear
+
+model_directory = "../cifar10_sampleCode/Example/"
+
 
 def activation( a ):
     return ( np.abs(a) + a ) /2
@@ -49,7 +58,7 @@ class DeConvNet( object ):
     def __init__( self ):
 
         print "Loading model..."
-        model_file = open( 'params.pkl', 'r')
+        model_file = open( model_directory + 'params.pkl', 'r')
         params = cPickle.load( model_file )
         model_file.close()
         
@@ -219,7 +228,7 @@ def Find_cifa_10():
     which_layer = 2
     
     ''' -------------- '''
-    sam_file = open('SubSet1000.pkl', 'r')
+    sam_file = open(model_directory + 'SubSet1000.pkl', 'r')
     samples = cPickle.load( sam_file )
     sam_file.close()
     print 'Dimension of Samples', np.shape(samples)

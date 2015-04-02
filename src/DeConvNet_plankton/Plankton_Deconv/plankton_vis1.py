@@ -1,12 +1,20 @@
+'''
+Created on Apr 1, 2015
+
+@author: ben
+
+Visualize all 
+'''
+
 import os
 import sys
 import numpy as np
 import cPickle
 from matplotlib import pyplot as plt
-
+from pylearn2.utils import serial
 
 # in order to import customeized classes
-parent_folder = os.path.abspath('../..')
+parent_folder = os.path.abspath('..')
 class_path = parent_folder + '/' + 'DeConvNet'
 if class_path not in sys.path:
     sys.path.append( class_path )
@@ -25,6 +33,8 @@ size_l0 = 32
 size_l1 = (size_l0-4)/2 # 14
 size_l2 = (size_l1-4)/2 # 5
 
+model_directory = "../cifar10_sampleCode/Example/"
+
 def activation( a ):
     return ( np.abs(a) + a ) /2 # ReLU max(0,a)
 
@@ -35,7 +45,7 @@ def example1():
     """
 
     print "Loading model..."
-    model_file = open( 'params.pkl', 'r')
+    model_file = open( model_directory + 'params.pkl', 'r')
     params = cPickle.load( model_file )
     model_file.close()
 
@@ -82,7 +92,7 @@ def example1():
 
     # load sample images
     print 'Loading sample images...'
-    f = open( 'SubSet25.pkl', 'r' )
+    f = open( model_directory + 'SubSet25.pkl', 'r' )
     input = cPickle.load( f )
     f.close()
 
@@ -131,5 +141,12 @@ def example1():
     plt.imshow(bigmap)
     plt.show()
 
+def loadModelParams(model_path="../../pylearn2_plankton/model_files/plankton_conv_model.pkl"):
+    print 'Loading Model'
+    from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
+    model = serial.load(model_path)
+    print "Done Loading Model"
+
 if __name__ == "__main__":
-    example1()
+    params = loadModelParams()
+    #example1()
