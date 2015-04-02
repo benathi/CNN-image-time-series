@@ -48,6 +48,8 @@ def example1():
     
     print 'layer0_w shape', np.shape(layer0_w)
     print 'layer0_b shape', np.shape(layer0_b)
+    print 'layer0_b[0] shape', np.shape(layer0_b[0])
+    print 'layer0_b[0] type', type(layer0_b[0]) # just a float
     print 'layer1_w shape', np.shape(layer1_w)
     print 'layer1_b shape', np.shape(layer1_b)
     print 'layer2_w shape', np.shape(layer2_w)

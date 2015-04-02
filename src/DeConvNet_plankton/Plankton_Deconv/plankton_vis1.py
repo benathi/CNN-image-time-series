@@ -28,7 +28,7 @@ from utils import tile_raster_images
 import theano
 theano.config.floatX = 'float32'
 
-NUM_C = 3
+NUM_C = 1
 size_l0 = 32
 size_l1 = (size_l0-4)/2 # 14
 size_l2 = (size_l1-4)/2 # 5
@@ -46,7 +46,7 @@ def example1():
     """
 
     #print "Loading model..."
-    model_file = open( trainedModelPath + "plankton_conv_visualize_model_gpu.pkl.params", 'r')
+    model_file = open( trainedModelPath + "plankton_conv_visualize_model.pkl.params", 'r')
     params = cPickle.load( model_file )
     model_file.close()
 
@@ -64,14 +64,22 @@ def example1():
     print 'layer2_w shape', np.shape(layer2_w)
     print 'layer2_b shape', np.shape(layer2_b)
     
+    '''
+    Note: after applying convolution, our weight is a weight per pixel
+    whereas the weight here is per the whole array. Fix this by averaging for now
+    '''
+    layer0_b = np.mean(layer0_b, axis=(1,2))
+    layer1_b = np.mean(layer1_b, axis=(1,2))
+    layer2_b = np.mean(layer2_b, axis=(1,2))
+    
     return
     # forward
     # filter shape is shape of layer0_w
-    up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,32,32), filter_shape = (32,NUM_C,5,5),
+    up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,28,28), filter_shape = (32,NUM_C,5,5),
                             poolsize = 2 , W = layer0_w, b = layer0_b, 
                             activation = activation)
                             
-    up_layer1 = CPRStage_Up( image_shape = (1,32,14,14), filter_shape = (50,32,5,5), 
+    up_layer1 = CPRStage_Up( image_shape = (1,32,12,12), filter_shape = (50,32,5,5), 
                             poolsize = 2,W = layer1_w, b = layer1_b ,
                             activation = activation)
                             
@@ -172,5 +180,5 @@ def recordModelParams(model_path= trainedModelPath + "plankton_conv_visualize_mo
     #from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
 
 if __name__ == "__main__":
-    #params = recordModelParams()
+    params = recordModelParams()
     example1()
