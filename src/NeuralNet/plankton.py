@@ -126,8 +126,8 @@ def runNeuralNet():
                              hiddenLayersSize=[59,59],
                  activationFunctions=['sigmoid']*3)
     print [np.shape(ob) for ob in nn.Thetas]
-    nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
-    #nn.train_cg(regParams=[0.01]*3)
+    #nn.train(maxNumIts=5000,regParams=[0.01]*3, trainToMax=True)
+    nn.train_cg(regParams=[0.01]*3)
     
 def sanitycheck():
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -215,7 +215,8 @@ def generateSubmissionFile(probMatrix, classDict, Y_info):
     
 
 def main():
-    dumpPlanktonData()
+    #dumpPlanktonData()
+    runNeuralNet()
     pass
 
 if __name__ == "__main__":

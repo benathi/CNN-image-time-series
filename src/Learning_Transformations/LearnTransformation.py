@@ -179,6 +179,9 @@ def FindT(X,Y, dimsize, numIter = 200, numBatches = 10, stepsize = 0.05, gamma =
         
         if(i>1):
             if (np.min(costvec[0:(i-1)]) == costvec[i]):
+                print np.min(costvec[0:(i-1)])
+                print costvec[i]
+                print "hi"
                 minT = globalT
             
             if (np.abs(costvec[i] - costvec[i-1]) < epsilon):
@@ -205,8 +208,14 @@ def main():
     X , Y, Y_info, classDict =  \
     pickle.load( open(os.path.join(current_folder_path,
                                            '../../data/planktonTrain.p'), 'rb'))
+    
+    numRows = X.shape[0]
+    boundaryT = np.floor(numRows*0.8)
+    X = X[0:boundaryT,:]
+    print X.shape
+    Y = Y[0:boundaryT]
     minT, globalT = FindT(X,Y,121,500,60,0.5,0.2,0.005, 0.000001) 
-    newX = np.dot(minT, X.T)
+    newX = np.dot(minT, X.T)    
     np.savetxt("XReduced", newX) 
     
     
