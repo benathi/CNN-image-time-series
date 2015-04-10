@@ -53,8 +53,17 @@ def FindT(X,Y, dimsize, numIter = 200, numBatches = 10, stepsize = 0.05, gamma =
     numObs = X.shape[0]
     origDim = X.shape[1]
     
+    _, _, V = np.linalg.svd(X, full_matrices=False)
+    
+
+    V = (V[:,0:121]).T
+    print V.shape    
+    
+    
     ## Create arbitrary starting T for each batch ; could explicitly load file here if needed
     T_init = np.random.standard_normal(size=(numBatches,dimsize,origDim))
+ 
+    
     
     ## Otherwise, this    
     TbMat = T_init
@@ -196,7 +205,7 @@ def main():
     X , Y, Y_info, classDict =  \
     pickle.load( open(os.path.join(current_folder_path,
                                            '../../data/planktonTrain.p'), 'rb'))
-    minT, globalT = FindT(X,Y,120,200,60,0.5,0.2) 
+    minT, globalT = FindT(X,Y,121,500,60,0.5,0.2,0.005, 0.000001) 
     newX = np.dot(minT, X.T)
     np.savetxt("XReduced", newX) 
     

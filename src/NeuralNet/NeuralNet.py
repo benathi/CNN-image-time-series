@@ -34,6 +34,9 @@ class NeuralNet:
     activationDicts = {}
     activationDicts['sigmoid'] = (sigmoid, sigmoidGrad)
 
+    X_test = None
+    y_test = None
+
     ''' Optional Fields '''
     testData = None
     
@@ -55,6 +58,30 @@ class NeuralNet:
             designMatrix = 255.0 - designMatrix
             designMatrix /= 255.0
             print 'Done Loading Plankton Data'
+        if dataset == "PLANKTONRANDOMPROJECTION":
+            print 'Loading Plankton Data'
+            designMatrix , data_labels, self.data_labels_dict, self.labelMapText =  \
+            pickle.load( open(os.path.join(current_folder_path,
+                                           '../../data/planktonTrain.p'), 'rb'))
+            designMatrix = 255.0 - designMatrix
+            designMatrix /= 255.0
+            SparseFactor = 1
+            K = 120
+            
+           # designMatrix = 1/np.sqrt(K) * np.dot(designMatrix, self.CreateSparseBernoulli(designMatrix.shape[1], K, SparseFactor) )
+            designMatrix = 1/np.sqrt(K) * np.dot(designMatrix, self.CreateRandomNormal(designMatrix.shape[1], K))
+            print 'Done Loading Plankton Data'            
+        if dataset == 'PLANKTONTRANSFORM':
+            print 'Loading Plankton Data'
+            Tmatrix = np.loadtxt(os.path.join( current_folder_path,
+                                                    '../../src/Learning_Transformations/TMatrx') )
+            
+            designMatrix , data_labels, self.data_labels_dict, self.labelMapText =  pickle.load( open(os.path.join(current_folder_path,
+                                           '../../data/planktonTrain.p'), 'rb')) 
+            
+            designMatrix = np.dot(designMatrix, Tmatrix.T)
+
+            print 'Done Loading Plankton Data'
         else:
             print "Other Data"
             
@@ -66,9 +93,34 @@ class NeuralNet:
         label_matrix = np.zeros((self.numInputs, self.outputDim))
         for i in range(self.numInputs):
             label_matrix[i,data_labels[i]] = 1
-        Data = collections.namedtuple('Data', ['X','Y'])
-        d = Data(designMatrix, label_matrix)
+        numRows = len(data_labels)
+        BoundaryT = np.floor(0.8*numRows)
+        self.X_test = designMatrix[BoundaryT:,:] # last 20 %
+        self.y_test = label_matrix[BoundaryT:,:]
+        print label_matrix , "label matrix"
+        DataTrain = collections.namedtuple('Data', ['X','Y'])
+        DataTest = collections.namedtuple('Data', ['X','Y'])
+        
+        d = DataTrain(designMatrix[:BoundaryT,:], label_matrix[:BoundaryT,:])
+        dtest = DataTest(self.X_test,self.y_test)
         return d
+ 
+    def CreateSparseBernoulli(self, numPara, numReducedDim, sparseFactor):
+        RMat = np.random.uniform(size = numPara * numReducedDim)
+        prob1 = 1/(2.0*sparseFactor)
+        prob2 = 1/(1.0*sparseFactor)
+        indices = np.where(RMat < prob1)
+        RMat[indices] = -1/np.sqrt(sparseFactor) * sparseFactor
+        indices = np.where((RMat < 2*prob1) & (RMat > 0))
+        RMat[indices] = 1/np.sqrt(sparseFactor) * sparseFactor
+        indices = np.where( (RMat<1) & (RMat >=0))
+        RMat[indices] = 0
+        RMat = np.reshape(RMat,(numPara,numReducedDim))
+        return RMat
+
+    def CreateRandomNormal(self, numPara, numReducedDim):
+        RMat = np.random.normal(size = (numPara,numReducedDim))
+        return RMat
             
     
     def __init__(self, trainingData='PLANKTON',
@@ -163,6 +215,7 @@ class NeuralNet:
                 self.Thetas[i] -= alpha*G[i]
             costList.append(J)
             print 'Iteration %d: Cost = %f' % (numIt, J)
+
             if numIt > 30:
                 percentTage = (costList[numIt-1]-costList[numIt])/J*100.0
                 #print 'Decreased by %f percent' % percentTage
@@ -195,7 +248,7 @@ class NeuralNet:
         res = self.regGradientWithCost(self.unpackTheta(T1D), X, y, regParams)
         return (res[0], self.packThetas(res[1]))'''
     
-    def train_cg(self, regParams=[0.01]*10):
+    def train_cg(self, regParams=[0.01]*10, MaxIts=200):
         print 'Training with Conjugate Gradient'
         #Thetas_expanded = self.packThetas(self.Thetas)
         #print Thetas_expanded
@@ -207,11 +260,12 @@ class NeuralNet:
         X = self.trainData[0]
         y = self.trainData[1]
         Thetas_expanded, fX = fmincg(lambda(Ts) : self.regGradientWithCost(Ts, X, y, regParams),
-                                         self.Thetas, MaxIter=200)
+                                         self.Thetas, MaxIter=MaxIts)
         #self.Thetas = self.unpackTheta(Thetas_expanded)
         self.Thetas = Thetas_expanded # modify
         print 'Log Loss Score (Training Set) = ', self.ReportLogLossScore()
-    
+        print 'Log Loss Score (Test Set) = ', self.ReportLogLossScoreTest()
+            
     def hypothesis(self, X):
         h = np.array(X) # deep copy
         for i in range(self.numLayers):
@@ -233,6 +287,14 @@ class NeuralNet:
     def ReportLogLossScore(self):
         H = self.hypothesis(self.trainData[0])
         y = self.trainData[1]
+        for i in xrange(np.shape(H)[0]):
+            #print 'i=%d. Sum of probability = %f. Max = %f. Length = %d' % (i, np.sum(H[i]), np.max(H[i]), len(H[i]))
+            H[i] /= np.sum(H[i])
+        return self.LogLossScore_UnNormalized(H, y)
+
+    def ReportLogLossScoreTest(self):
+        H = self.hypothesis(self.X_test)
+        y = self.y_test
         for i in xrange(np.shape(H)[0]):
             #print 'i=%d. Sum of probability = %f. Max = %f. Length = %d' % (i, np.sum(H[i]), np.max(H[i]), len(H[i]))
             H[i] /= np.sum(H[i])
