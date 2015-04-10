@@ -60,10 +60,10 @@ class Pairs( object ):
 
 class DeConvNet( object ):
     
-    def __init__( self ):
+    def __init__( self, model_name="plankton_conv_visualize_model.pkl.params"):
 
         print "Loading plankton model..."
-        model_file = open( trainedModelPath + "plankton_conv_visualize_model.pkl.params", 'r')
+        model_file = open( trainedModelPath + model_name, 'r')
         params = cPickle.load( model_file )
         model_file.close()
         
@@ -241,19 +241,19 @@ def printHeaps(Heaps):
         for p in Heaps[key]:
             print "\tActivation = {} Input Sam {}".format(p.act, np.shape(p.sam))
 
-def Find_plankton():
+def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params"):
     """
     Find plankton that activates the given layers most
     """
-    which_layer = 0
+    which_layer = 2
     
     import plankton_vis1
     samples = plankton_vis1.loadSamplePlanktons(numSamples=3000)
     print 'Dimension of Samples', np.shape(samples)
-    Net = DeConvNet()
+    Net = DeConvNet(model_name)
     
     #kernel_list = [ 2,23,60,12,45,9 ]
-    kernel_list = range(16,32)
+    kernel_list = range(48,64)
     
     
     num_of_maximum = 9
@@ -299,5 +299,15 @@ def Find_plankton():
     plt.show()
 
 if __name__ == "__main__":
-    Find_plankton()
+    import sys
+    if len(sys.argv) >= 2:
+        try:
+            model_name = sys.argv[1]
+            print 'Loading', model_name
+            Find_plankton(model_name)
+        except IndexError:
+            print 'Please specify params filename in the argument.'
+            print 'Eg. python plankton_vis1.py plankton_conv_visualize_model.pkl.params'
+    else:
+        Find_plankton()
     
