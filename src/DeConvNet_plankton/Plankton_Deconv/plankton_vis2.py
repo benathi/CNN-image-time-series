@@ -241,19 +241,19 @@ def printHeaps(Heaps):
         for p in Heaps[key]:
             print "\tActivation = {} Input Sam {}".format(p.act, np.shape(p.sam))
 
-def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params"):
+def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False):
     """
     Find plankton that activates the given layers most
     """
     which_layer = 2
     
     import plankton_vis1
-    samples = plankton_vis1.loadSamplePlanktons(numSamples=3000)
+    samples = plankton_vis1.loadSamplePlanktons(numSamples=3000,rotate=rotate)
     print 'Dimension of Samples', np.shape(samples)
     Net = DeConvNet(model_name)
     
     #kernel_list = [ 2,23,60,12,45,9 ]
-    kernel_list = range(48,64)
+    kernel_list = range(0,16)
     
     
     num_of_maximum = 9
@@ -299,15 +299,13 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params"):
     plt.show()
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) >= 2:
-        try:
-            model_name = sys.argv[1]
-            print 'Loading', model_name
-            Find_plankton(model_name)
-        except IndexError:
-            print 'Please specify params filename in the argument.'
-            print 'Eg. python plankton_vis1.py plankton_conv_visualize_model.pkl.params'
-    else:
-        Find_plankton()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-rotate', action="store_true", default=False)
+    parser.add_argument('-paramsname', action="store", default='plankton_conv_visualize_model.pkl.params')
+    results = parser.parse_args()
+    rotate = results.rotate
+    model_name = results.paramsname
+    print 'Loading Params from', model_name
+    Find_plankton(model_name, rotate)
     

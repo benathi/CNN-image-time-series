@@ -42,17 +42,23 @@ def activation( a ):
     return ( np.abs(a) + a ) /2 # ReLU max(0,a)
 
 ''' This file is run if the pickle file does not exist '''
-def loadSamplePlanktons(numSamples=100):
-    from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
-    ds = PlanktonData(which_set='train')
-    designMatrix = ds.get_data()[0] # index 1 is the label
-    print "Shape of Design Matrix", np.shape(designMatrix)
-    designMatrix = np.reshape(designMatrix, 
-                              (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
-    return np.array(designMatrix[-numSamples:,...], dtype=np.float32)
-    
+def loadSamplePlanktons(numSamples=100, rotate=False):
+    if not rotate:
+        from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
+        ds = PlanktonData(which_set='train')
+        designMatrix = ds.get_data()[0] # index 1 is the label
+        print "Shape of Design Matrix", np.shape(designMatrix)
+        designMatrix = np.reshape(designMatrix, 
+                                  (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
+        return np.array(designMatrix[-numSamples:,...], dtype=np.float32)
+    else:
+        print "Loading Rotated Data"
+        designMatrix = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'r'))
+        return np.reshape(np.array(designMatrix[:numSamples,...], dtype=np.float32),
+                          (numSamples,1,MAX_PIXEL,MAX_PIXEL))
 
-def example1(model_file_name = "plankton_conv_visualize_model.pkl.params"):
+
+def example1(model_file_name = "plankton_conv_visualize_model.pkl.params", rotatedSample=False):
     """
     In this example, I visulize what the 3rd layer 'see' altogether.
     By set none of feature maps in 3rd layer to zero.
@@ -118,7 +124,7 @@ def example1(model_file_name = "plankton_conv_visualize_model.pkl.params"):
     #f = open( model_directory + 'SubSet25.pkl', 'r' )
     #input = cPickle.load( f )
     #f.close()
-    input = loadSamplePlanktons()
+    input = loadSamplePlanktons(rotated=rotatedSample)
 
     print 'Sample Images Shape', np.shape(input)
 
@@ -173,15 +179,13 @@ def example1(model_file_name = "plankton_conv_visualize_model.pkl.params"):
     plt.show()
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) >= 2:
-        try:
-            model_name = sys.argv[1]
-            print 'Loading', model_name
-            example1(model_name)
-        except IndexError:
-            print 'Please specify params filename in the argument.'
-            print 'Eg. python plankton_vis1.py plankton_conv_visualize_model.pkl.params'
-    else:
-        example1()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-rotate', action="store_true", default=False)
+    parser.add_argument('-paramsname', action="store", default='plankton_conv_visualize_model.pkl.params')
+    results = parser.parse_args()
+    rotate = results.rotate
+    model_name = results.paramsname
+    print 'Loading Params from', model_name
+    example1(model_name, rotate)
     
