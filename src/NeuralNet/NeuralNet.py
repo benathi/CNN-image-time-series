@@ -17,6 +17,15 @@ def sigmoid(z):
 def sigmoidGrad(z):
     return sigmoid(z)*(1-sigmoid(z))
 
+def relu(z):
+    return (z + np.abs(z))/2.0
+
+def reluGrad(z):
+    return np.array(z > 0, dtype=np.int32)
+
+def tanh_grad(z):
+    return 1.0 - np.power(np.tanh(z),2)
+
 class NeuralNet:
     ''' Required Fields '''
     Thetas = []
@@ -33,6 +42,8 @@ class NeuralNet:
 
     activationDicts = {}
     activationDicts['sigmoid'] = (sigmoid, sigmoidGrad)
+    activationDicts['relu'] = (relu, reluGrad)
+    activationDicts['tanh'] = (np.tanh, tanh_grad)
 
     X_test = None
     y_test = None

@@ -12,3 +12,7 @@ src/LeNet/octave-workspace
 *.pkl
 
 *.params
+
+*.png
+
+src/Learning_Transformations/TMatrx

@@ -214,7 +214,7 @@ def main():
     X = X[0:boundaryT,:]
     print X.shape
     Y = Y[0:boundaryT]
-    minT, globalT = FindT(X,Y,121,500,60,0.5,0.2,0.005, 0.000001) 
+    minT, globalT = FindT(X,Y,121,1000,60,0.5,0.2,0.005, 0.000001) 
     newX = np.dot(minT, X.T)    
     np.savetxt("XReduced", newX) 
     
