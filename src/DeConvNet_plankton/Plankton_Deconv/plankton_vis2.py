@@ -241,11 +241,11 @@ def printHeaps(Heaps):
         for p in Heaps[key]:
             print "\tActivation = {} Input Sam {}".format(p.act, np.shape(p.sam))
 
-def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False):
+def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False, start=0, end=16, which_layer=2):
     """
     Find plankton that activates the given layers most
     """
-    which_layer = 2
+    #which_layer = 2
     
     import plankton_vis1
     samples = plankton_vis1.loadSamplePlanktons(numSamples=3000,rotate=rotate)
@@ -253,7 +253,7 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
     Net = DeConvNet(model_name)
     
     #kernel_list = [ 2,23,60,12,45,9 ]
-    kernel_list = range(0,16)
+    kernel_list = range(start,end)
     
     
     num_of_maximum = 9
@@ -299,13 +299,20 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
     plt.show()
 
 if __name__ == "__main__":
+    print 'Example: python plankton_vis2.py-rotate -start 16 -end 32 -layer 1'
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-rotate', action="store_true", default=False)
     parser.add_argument('-paramsname', action="store", default='plankton_conv_visualize_model.pkl.params')
+    parser.add_argument('-start', action="store", default=0, type=int)
+    parser.add_argument('-end', action="store", default=16, type=int)
+    parser.add_argument('-layer', action="store", default=2, type=int)
     results = parser.parse_args()
     rotate = results.rotate
     model_name = results.paramsname
+    start = results.start
+    end = results.end
+    layer = results.layer
     print 'Loading Params from', model_name
-    Find_plankton(model_name, rotate)
+    Find_plankton(model_name, rotate, start, end, layer)
     
