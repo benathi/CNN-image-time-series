@@ -220,9 +220,15 @@ def findmaxactivation( Net, samples, num_of_maximum, kernel_list, which_layer=2)
             #64 for this example
             #print "Type of Net.forward", type(Net.forward)
             #<class 'theano.compile.function_module.Function'>
-        activate_value = activate_value.flatten()
+        numKernels = np.shape(activate_value)[1]
+        newActivateValues = np.zeros((numKernels))
+        for i in range(numKernels):
+            # using the norm to determine the activate value
+            newActivateValues[i] = np.linalg.norm(activate_value[0,i]) 
+            #newActivateValues[i] = np.std( activate_value[0,i].flatten())
+             
         for kernel_i in kernel_list:
-            heappushpop( Heaps[kernel_i], Pairs( activate_value[kernel_i], sam ))
+            heappushpop( Heaps[kernel_i], Pairs( newActivateValues[kernel_i], sam ))
             # heappushpop is from python's heapq
             # maximum heap
     printHeaps(Heaps)        
@@ -239,15 +245,16 @@ def Find_plankton():
     """
     Find plankton that activates the given layers most
     """
-    which_layer = 2
+    which_layer = 0
     
     import plankton_vis1
-    samples = plankton_vis1.loadSamplePlanktons(numSamples=1000)
+    samples = plankton_vis1.loadSamplePlanktons(numSamples=3000)
     print 'Dimension of Samples', np.shape(samples)
     Net = DeConvNet()
     
     #kernel_list = [ 2,23,60,12,45,9 ]
-    kernel_list = [0,5,10,15]
+    kernel_list = range(16,32)
+    
     
     num_of_maximum = 9
     Heaps = findmaxactivation( Net, samples, num_of_maximum, kernel_list, which_layer=which_layer)
