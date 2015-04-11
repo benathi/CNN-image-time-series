@@ -16,3 +16,5 @@ src/LeNet/octave-workspace
 *.png
 
 src/Learning_Transformations/TMatrx
+
+src/Learning_Transformations/XReduced
