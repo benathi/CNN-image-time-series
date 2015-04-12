@@ -49,7 +49,13 @@ class CPRStage_Up( object ):
         x = T.tensor4('x')
         conv_out = conv.conv2d( input = x  , filters = W, filter_shape = filter_shape,
                                                 image_shape = image_shape, border_mode = 'valid' )
-        output = conv_out + self.b.dimshuffle('x',0,'x','x')
+        #print "Conv out is of shape" , type(conv_out)
+        if len(np.shape(b)) == 1:
+            print "b is a scalar for each feature map"
+            output = conv_out + self.b.dimshuffle('x',0,'x','x')
+        else:
+            print "b is a matrix for each feature map"
+            output = conv_out + self.b.dimshuffle('x',0,1,2)
         self.conv = theano.function( [ x ] , output, allow_input_downcast=True )
    
     def GetOutput( self, input = input ):

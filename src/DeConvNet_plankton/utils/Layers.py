@@ -94,8 +94,11 @@ class ConvPoolLayer( object ):
         mean_out = conv.conv2d(input = self.Means, filters=self.W)
         mean_out = mean_out.dimshuffle(0,2,3,1)
         mean_out = mean_out[0,0,0,:]
-
-        out = pooled_out - mean_out.dimshuffle('x', 0, 'x', 'x') + self.b.dimshuffle('x', 0, 'x', 'x')
+        if len(numpy.shape(b)) == 1:
+            out = pooled_out - mean_out.dimshuffle('x', 0, 'x', 'x') + self.b.dimshuffle('x', 0, 'x', 'x')
+        else:
+            print 'Not working yet - see about this'
+            out = pooled_out - mean_out.dimshuffle('x', 0, 'x', 'x') + self.b.dimshuffle('x', 0, 1, 2)
         self.output = (out if activation is None
                     else activation(out))
         # store parameters of this layer

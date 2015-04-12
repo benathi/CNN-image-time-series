@@ -60,7 +60,8 @@ class Pairs( object ):
 
 class DeConvNet( object ):
     
-    def __init__( self, model_name="plankton_conv_visualize_model.pkl.params"):
+    def __init__( self, model_name="plankton_conv_visualize_model.pkl.params",
+                  bScalar=False):
 
         print "Loading plankton model..."
         model_file = open( trainedModelPath + model_name, 'r')
@@ -78,9 +79,13 @@ class DeConvNet( object ):
         Note: after applying convolution, our weight is a weight per pixel
         whereas the weight here is per the whole array. Fix this by averaging for now
         '''
-        layer0_b = np.mean(layer0_b, axis=(1,2))
-        layer1_b = np.mean(layer1_b, axis=(1,2))
-        layer2_b = np.mean(layer2_b, axis=(1,2))
+        if bScalar:
+            print "Using b as scalar"
+            layer0_b = np.mean(layer0_b, axis=(1,2))
+            layer1_b = np.mean(layer1_b, axis=(1,2))
+            layer2_b = np.mean(layer2_b, axis=(1,2))
+        else:
+            print "Using b as matrix"
 
         # compile theano function for efficient forward propagation
         x = T.tensor4('x')
@@ -241,16 +246,18 @@ def printHeaps(Heaps):
         for p in Heaps[key]:
             print "\tActivation = {} Input Sam {}".format(p.act, np.shape(p.sam))
 
-def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False, start=0, end=16, which_layer=2):
+def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False, bScalar=False, 
+                  start=0, end=16, which_layer=2,
+                  numSamples=3000):
     """
     Find plankton that activates the given layers most
     """
     #which_layer = 2
     
     import plankton_vis1
-    samples = plankton_vis1.loadSamplePlanktons(numSamples=3000,rotate=rotate)
+    samples = plankton_vis1.loadSamplePlanktons(numSamples=numSamples,rotate=rotate)
     print 'Dimension of Samples', np.shape(samples)
-    Net = DeConvNet(model_name)
+    Net = DeConvNet(model_name, bScalar)
     
     #kernel_list = [ 2,23,60,12,45,9 ]
     kernel_list = range(start,end)
@@ -307,12 +314,14 @@ if __name__ == "__main__":
     parser.add_argument('-start', action="store", default=0, type=int)
     parser.add_argument('-end', action="store", default=16, type=int)
     parser.add_argument('-layer', action="store", default=2, type=int)
+    parser.add_argument('-bScalar', action="store_true", default=True) # set default to false after fixing
     results = parser.parse_args()
     rotate = results.rotate
     model_name = results.paramsname
     start = results.start
     end = results.end
     layer = results.layer
+    bScalar = results.bScalar
     print 'Loading Params from', model_name
-    Find_plankton(model_name, rotate, start, end, layer)
+    Find_plankton(model_name, rotate, bScalar, start, end, layer)
     

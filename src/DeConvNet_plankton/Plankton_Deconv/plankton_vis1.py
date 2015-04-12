@@ -58,7 +58,9 @@ def loadSamplePlanktons(numSamples=100, rotate=False):
                           (numSamples,1,MAX_PIXEL,MAX_PIXEL))
 
 
-def example1(model_file_name = "plankton_conv_visualize_model.pkl.params", rotatedSample=False):
+def example1(model_file_name = "plankton_conv_visualize_model.pkl.params",
+             rotatedSample=False,
+             bScalar=False):
     """
     In this example, I visulize what the 3rd layer 'see' altogether.
     By set none of feature maps in 3rd layer to zero.
@@ -87,10 +89,16 @@ def example1(model_file_name = "plankton_conv_visualize_model.pkl.params", rotat
     Note: after applying convolution, our weight is a weight per pixel
     whereas the weight here is per the whole array. Fix this by averaging for now
     '''
-    layer0_b = np.mean(layer0_b, axis=(1,2))
-    layer1_b = np.mean(layer1_b, axis=(1,2))
-    layer2_b = np.mean(layer2_b, axis=(1,2))
-    
+    if bScalar:
+        print "Using B as scalar"
+        layer0_b = np.mean(layer0_b, axis=(1,2))
+        layer1_b = np.mean(layer1_b, axis=(1,2))
+        layer2_b = np.mean(layer2_b, axis=(1,2))
+    else:
+        print "Using B as matrix. B has the following shapes"
+        print "Layer 0", np.shape(layer0_b)
+        print "Layer 1", np.shape(layer1_b)
+        print "Layer 2", np.shape(layer2_b)
     
     # forward
     # filter shape is shape of layer0_w
@@ -124,7 +132,7 @@ def example1(model_file_name = "plankton_conv_visualize_model.pkl.params", rotat
     #f = open( model_directory + 'SubSet25.pkl', 'r' )
     #input = cPickle.load( f )
     #f.close()
-    input = loadSamplePlanktons(rotated=rotatedSample)
+    input = loadSamplePlanktons(rotate=rotatedSample)
 
     print 'Sample Images Shape', np.shape(input)
 
@@ -183,9 +191,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-rotate', action="store_true", default=False)
     parser.add_argument('-paramsname', action="store", default='plankton_conv_visualize_model.pkl.params')
+    parser.add_argument('-bScalar', action="store_true", default=False)
     results = parser.parse_args()
     rotate = results.rotate
     model_name = results.paramsname
+    bScalar = results.bScalar
     print 'Loading Params from', model_name
-    example1(model_name, rotate)
+    example1(model_name, rotate, bScalar)
     
