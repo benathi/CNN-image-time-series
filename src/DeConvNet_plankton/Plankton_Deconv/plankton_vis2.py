@@ -293,10 +293,13 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
                                    tile_spacing=(1, 1), scale_rows_to_unit_interval=True, 
                                     output_pixel_vals=True)
         this_pairmap = np.append( this_map, this_Deconv, axis = 0)
-
+        
         if bigbigmap == None:
             bigbigmap = this_pairmap
             segment_line = 255*np.ones([bigbigmap.shape[0],1,4],dtype='uint8')
+            print 'this_map dimension', this_map.shape
+            print 'this_pairmap dimension', this_pairmap.shape
+            print 'segment_line dimension', segment_line.shape
         else:
             bigbigmap = np.append(bigbigmap, segment_line, axis = 1)            
             bigbigmap = np.append(bigbigmap, this_pairmap, axis = 1)

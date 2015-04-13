@@ -119,7 +119,6 @@ def main(model_name="plankton_conv_visualize_model.pkl.params",
     y_labels = plankton_utils.getY_label_int(which_data='train')
     activation_dict = separateActivationsByClass(activations, y_labels)
     calculateAverageActivations(activation_dict, which_layer)
-
     
 
 if __name__ == "__main__":
