@@ -248,7 +248,7 @@ def printHeaps(Heaps):
 
 def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False, bScalar=False, 
                   start=0, end=16, which_layer=2,
-                  numSamples=3000):
+                  numSamples=1000):
     """
     Find plankton that activates the given layers most
     """

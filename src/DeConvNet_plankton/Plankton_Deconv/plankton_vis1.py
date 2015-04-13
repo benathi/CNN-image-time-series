@@ -50,7 +50,10 @@ def loadSamplePlanktons(numSamples=100, rotate=False):
         print "Shape of Design Matrix", np.shape(designMatrix)
         designMatrix = np.reshape(designMatrix, 
                                   (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
-        return np.array(designMatrix[-numSamples:,...], dtype=np.float32)
+        if numSamples != 'All':
+            return np.array(designMatrix[:numSamples,...], dtype=np.float32)
+        else:
+            return np.array(designMatrix, dtype=np.float32)
     else:
         print "Loading Rotated Data"
         designMatrix = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'r'))
