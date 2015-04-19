@@ -50,6 +50,7 @@ if __name__ == "__main__":
     import sys
     try:
         pkl_filename = sys.argv[1]
+        numofLayers = int(sys.argv[2])
     except IndexError:
-        print 'Please specify model (.pkl) name in the argument. Eg. python extractParamsFromPkl.py plankton_conv_visualize_model.pkl'
-    recordModelParams(pkl_filename)
+        print 'Please specify model (.pkl) name in the argument and number of layers. Eg. python extractParamsFromPkl.py plankton_conv_visualize_model.pkl 5'
+    recordModelParams(pkl_filename, numofLayers)
