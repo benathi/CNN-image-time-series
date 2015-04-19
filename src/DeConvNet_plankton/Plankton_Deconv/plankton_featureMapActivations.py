@@ -2,6 +2,14 @@
 Created on Apr 12, 2015
 
 @author: ben
+
+TODO: Should we use flatten to unpack feature map?
+Can we use the maximum value?
+Flatten preserves locality
+np.array([  [[1,2],[3,4]], [[5,6],[7,8]] ]).flatten()
+array([1, 2, 3, 4, 5, 6, 7, 8])
+
+Take maximum for feature map? or average?
 '''
 import numpy as np
 from plankton_vis2 import DeConvNet
@@ -21,9 +29,12 @@ if class_path not in sys.path:
 import plankton_utils
 
 def findActivations(Cnn, samples,
-                    which_layer=2):
+                    which_layer=2, allFeats=True):
     print "Finding Activation Values at Layer", which_layer
-    activations_filename = 'activations.npy'
+    if allFeats:
+        activations_filename = 'activations_layer' + str(which_layer) + '_allFeats'  +'.npy'
+    else:
+        activations_filename = 'activations_layer' + str(which_layer) +'.npy'
     if os.path.isfile(activations_filename):
         print 'Loading Activations from files'
         return np.load(file(activations_filename, 'r'))
@@ -35,9 +46,15 @@ def findActivations(Cnn, samples,
     if which_layer == 2:
         activations = np.zeros((numSamples,) + np.shape(Cnn.forward2(first_sample).flatten()) )
     elif which_layer == 1:
-        activations = np.zeros((numSamples,) + np.shape(Cnn.forward1(first_sample).flatten()) )
-    elif which_layer == 2:
-        activations = np.zeros((numSamples,) + np.shape(Cnn.forward0(first_sample).flatten()) )
+        if allFeats:
+            activations = np.zeros((numSamples,) + np.shape(Cnn.forward1(first_sample).flatten()) )
+        else:
+            activations = np.zeros((numSamples,) + (np.shape(Cnn.forward1(first_sample))[1],) )
+    elif which_layer == 0:
+        if allFeats:
+            activations = np.zeros((numSamples,) + np.shape(Cnn.forward0(first_sample).flatten()) )
+        else:
+            activations = np.zeros((numSamples,) + (np.shape(Cnn.forward0(first_sample))[1],) )
     print 'Shape of activations matrix', np.shape(activations)
     for i, sam in enumerate(samples):
         if i % 500 == 0:
@@ -49,8 +66,13 @@ def findActivations(Cnn, samples,
             activate_value = Cnn.forward1(sam)
         elif which_layer == 0:
             activate_value = Cnn.forward0(sam)
-        
-        activations[i] = activate_value.flatten() # note: first axis is simply batch size
+        if i == 0:
+            print 'Activation Shape =', activate_value.shape
+            # (1, 48, 4, 4) for layer 1 for example
+        if allFeats:
+            activations[i] = activate_value.flatten() # note: first axis is simply batch size
+        else:
+            activations[i] = np.mean(activate_value, axis=(2,3))
     np.save(open(activations_filename, 'w'), activations)
     return activations
 
@@ -76,7 +98,7 @@ def separateActivationsByClass(activations, y_labels):
     #print "shape of class 0", np.shape(activation_dict[0]) # - looks correct
     return activation_dict
 
-def calculateAverageActivations(activation_dict, which_layer,savePlots=False):
+def calculateAverageActivations(activation_dict, which_layer,savePlots=True):
     # assume that each activation has been flatten to vector
     numFeatures = np.shape(activation_dict[0])[1]
     print 'num features =', numFeatures
@@ -90,32 +112,40 @@ def calculateAverageActivations(activation_dict, which_layer,savePlots=False):
         averageActivations[class_num,:] = np.mean(activation_dict[class_num], axis=0) + 0.00001
         print 'class_num', class_num
         if savePlots:
-            print averageActivations[class_num]
+            #print averageActivations[class_num]
+            pass
         df = pd.DataFrame({"x": range(numFeatures), "y":averageActivations[class_num],
                            "feature_num":range(numFeatures), "positions":[0.0]*numFeatures})
         _plot = ggplot(aes(x="x", y="y"), df) + geom_bar(fill='#9ac37b', stat="bar") \
             + ggtitle('Average Activation for Class ' + str(class_num) + ' Layer' + str(which_layer) ) \
             + xlab('Feature') + ylab('Activation') \
-            + geom_text(aes(label='feature_num', y='y', size=8, vjust=0.05, hjust=-0.3))
+            + geom_text(aes(label='feature_num', y='y', size=8, vjust=0.0, hjust=-0.3))
             #+ scale_x_continuous(breaks=range(0,numFeatures))
         if savePlots:
-            ggsave(_plot, 'results/averageActivationLayer' + str(which_layer) + 'Class' + str(class_num) + '.png', 
+            ggsave(_plot, 'results/activationsVis/layer' + str(which_layer)
+                   + '/averageActivationLayer' + str(which_layer)
+                   + 'Class' + str(class_num) + '.pdf',
                    width=16, height=6)
         #print _plot
         #break
     np.save(open('average_activationsLayer' + str(which_layer) + '.npy', 'w'), averageActivations)
 
-def getAverageActivationsMatrix(which_layer=2):
-    return np.load(open('average_activationsLayer' + str(which_layer) + '.npy', 'r'))
+''' Helper method for other scripts to use '''
+def getAverageActivationsMatrix(which_layer=2, allFeats=False):
+    if allFeats:
+        return np.load(open('average_activationsLayer' + str(which_layer)  + '_allFeats' + '.npy', 'r'))
+    else:
+        return np.load(open('average_activationsLayer' + str(which_layer) + '.npy', 'r'))
+
     
 def main(model_name="plankton_conv_visualize_model.pkl.params",
          rotate=False, bScalar=True, 
-         which_layer=2, numSamples='All'):
+         which_layer=0, numSamples='All'):
     import plankton_vis1
     samples = plankton_vis1.loadSamplePlanktons(numSamples, rotate)
     print 'Dimension of Samples', np.shape(samples)
     Cnn = DeConvNet(model_name, bScalar)
-    activations = findActivations(Cnn, samples, which_layer)
+    activations = findActivations(Cnn, samples, which_layer, allFeats=False)
     y_labels = plankton_utils.getY_label_int(which_data='train')
     activation_dict = separateActivationsByClass(activations, y_labels)
     calculateAverageActivations(activation_dict, which_layer)

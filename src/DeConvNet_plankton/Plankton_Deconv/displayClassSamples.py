@@ -26,14 +26,15 @@ import plankton_utils
 MAX_PIXEL = 28
 NUM_C = 1
 
-def displayClassSamples():
+def displayClassSamples(saveIndividualSamples=False):
     # from bc01 to cb01
     samples = loadSamplePlanktons(30000, rotate=False)
+    print 'samples shape', samples.shape #e.g. (30000,1,28,28)
     y_labels = plankton_utils.getY_label_int(which_data='train')[:30000]
     # construct list of indices for each label
     class_indices = [None]*121
     for _index, y_label in enumerate(y_labels):
-        print "label %d _index = %d" % (y_label, _index)
+        #print "label %d _index = %d" % (y_label, _index)
         if class_indices[y_label] == None:
             class_indices[y_label] = [_index]
         else:
@@ -44,6 +45,45 @@ def displayClassSamples():
         if len(this_class_indices) < 4:
             print 'Warning! Increase sample size! (Found less than 4 samples for class ', i
             return
+    
+    if saveIndividualSamples:
+        ''' Saving sample image for each class '''
+        #print 'this_class_indices', this_class_indices
+        shape = samples[this_class_indices[0]].shape
+        #print 'shape of sample', shape    #e.g. (1,28,28)
+        for class_num, this_class_indices in enumerate(class_indices):
+            tile4 = None
+            for i in range(2):
+                tile2 = None
+                for j in range(2):
+                    if tile2 == None:
+                        tile2 = np.reshape(samples[this_class_indices[2*i+j]], (shape[1],shape[2]))
+                    else:
+                        tile2 = np.concatenate( (tile2, 
+                                             np.reshape(samples[this_class_indices[2*i+j]], (shape[1],shape[2]))
+                                             ),
+                                            axis=0)
+                if tile4 == None:
+                    tile4 = tile2
+                else:
+                    tile4 = np.concatenate( (tile4, tile2), axis=1)
+            print 'class_num', class_num ,'shape of tile4', tile4.shape
+            fname = 'results/classSamples_grey/' + str(class_num) + ".png"
+            if False:
+                from PIL import Image
+                newIm = 255.*(tile4)/2. + 127.
+                im = Image.fromarray(newIm)
+                im = im.convert('RGB')
+                print 'Saving class num=', class_num
+                im.save(fname)
+            else:
+                plt.imshow(newIm, cmap = cm.Greys_r)
+                plt.axis('off')
+                plt.show()
+                plt.savefig(fname)
+    
+    
+    
     
     bigbigmap = None
     for row in range(11):

@@ -23,3 +23,5 @@ src/Learning_Transformations/XReduced
 *.png
 
 *.npy
+
+*.pdf
