@@ -30,10 +30,11 @@ def recordModelParams(model_name = "plankton_conv_visualize_model.pkl",numLayer 
     layer_names = []
     for i in range(numLayer):
         strname = "c" + str(i) + "_b";
-        layer_names.prepend(strname)
+        layer_names.append(strname)
         strname = "c" + str(i) + "_W";
-        layer_names.prepend(strname)   
+        layer_names.append(strname)   
 #    layer_names = ['c2_W', 'c2_b', 'c1_W', 'c1_b', 'c0_W', 'c0_b']
+    layer_names.reverse()
     print "type", type(param_names[0])
     print "index of c0_W", param_names.index('c0_W')
     # assume there are 3 layers
