@@ -1,5 +1,5 @@
 !obj:pylearn2.train.Train {
-    dataset: &train !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
+    dataset: &train !obj:pylearn2_plankton.planktonData40pixels.PlanktonData {
         which_set: 'train',
         start: 0,
         stop: 20000
