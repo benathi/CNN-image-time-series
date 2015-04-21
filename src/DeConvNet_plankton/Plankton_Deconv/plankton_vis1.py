@@ -42,23 +42,35 @@ def activation( a ):
     return ( np.abs(a) + a ) /2 # ReLU max(0,a)
 
 ''' This file is run if the pickle file does not exist '''
-def loadSamplePlanktons(numSamples=100, rotate=False):
-    if not rotate:
-        from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
+def loadSamplePlanktons(numSamples=100, rotate=False, dim=28):
+    if dim == 28:
+        if not rotate:
+            from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
+            ds = PlanktonData(which_set='train')
+            designMatrix = ds.get_data()[0] # index 1 is the label
+            print "Shape of Design Matrix", np.shape(designMatrix)
+            designMatrix = np.reshape(designMatrix, 
+                                      (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
+            if numSamples != 'All':
+                return np.array(designMatrix[:numSamples,...], dtype=np.float32)
+            else:
+                return np.array(designMatrix, dtype=np.float32)
+        else:
+            print "Loading Rotated Data"
+            designMatrix = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'r'))
+            return np.reshape(np.array(designMatrix[:numSamples,...], dtype=np.float32),
+                              (numSamples,1,MAX_PIXEL,MAX_PIXEL))
+    elif dim == 40:
+        from pylearn2_plankton.planktonData40pixels import PlanktonData
         ds = PlanktonData(which_set='train')
         designMatrix = ds.get_data()[0] # index 1 is the label
         print "Shape of Design Matrix", np.shape(designMatrix)
         designMatrix = np.reshape(designMatrix, 
-                                  (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
+                                  (ds.get_num_examples(), 1, 40, 40) )
         if numSamples != 'All':
             return np.array(designMatrix[:numSamples,...], dtype=np.float32)
         else:
             return np.array(designMatrix, dtype=np.float32)
-    else:
-        print "Loading Rotated Data"
-        designMatrix = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'r'))
-        return np.reshape(np.array(designMatrix[:numSamples,...], dtype=np.float32),
-                          (numSamples,1,MAX_PIXEL,MAX_PIXEL))
 
 
 def example1(model_file_name = "plankton_conv_visualize_model.pkl.params",
