@@ -132,7 +132,7 @@ class DeConvNet( object ):
                                 
         down_layer0 = CPRStage_Down( image_shape = (1,32,36,36), filter_shape = (NUM_C,32,5,5), 
                                 poolsize = 2,W = layer0_w, b = layer0_b,
-                                activation = activation)                    
+                                activation = activation)                                              
 
         self.Stages = [ up_layer0, up_layer1, up_layer2,
                            down_layer2, down_layer1, down_layer0]
@@ -254,8 +254,8 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
     """
     #which_layer = 2
     
-    import plankton_vis1
-    samples = plankton_vis1.loadSamplePlanktons(numSamples=numSamples,rotate=rotate, dim = 40)
+    import plankton_vis1Thin3Layers
+    samples = plankton_vis1Thin3Layers.loadSamplePlanktons(numSamples=numSamples,rotate=rotate, dim = 40)
     print 'Dimension of Samples', np.shape(samples)
     Net = DeConvNet(model_name, bScalar)
     
