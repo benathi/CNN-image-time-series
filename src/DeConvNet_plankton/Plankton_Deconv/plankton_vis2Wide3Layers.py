@@ -91,17 +91,17 @@ class DeConvNet( object ):
         x = T.tensor4('x')
  
         layer0 = ConvPoolLayer( input = x, image_shape = (1,NUM_C,40,40), 
-                                filter_shape = (32,NUM_C,5,5), W = layer0_w,
+                                filter_shape = (128,NUM_C,5,5), W = layer0_w,
                                 b = layer0_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear)
                                 
-        layer1 = ConvPoolLayer( input = layer0.output, image_shape = (1,32,18,18), 
-                                filter_shape = (48,32,5,5), W = layer1_w, 
+        layer1 = ConvPoolLayer( input = layer0.output, image_shape = (1,128,18,18), 
+                                filter_shape = (256,128,5,5), W = layer1_w, 
                                 b = layer1_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear)
         
-        layer2 = ConvPoolLayer( input = layer1.output, image_shape = (1,48,7,7), 
-                                filter_shape = (64,48,2,2), W = layer2_w, 
+        layer2 = ConvPoolLayer( input = layer1.output, image_shape = (1,256,7,7), 
+                                filter_shape = (512,256,2,2), W = layer2_w, 
                                 b = layer2_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear) 
         print "Compiling theano.function..."
@@ -110,27 +110,27 @@ class DeConvNet( object ):
         self.forward1 = theano.function( [x], layer1.output)
         self.forward0 = theano.function( [x], layer0.output)
                                
-        up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,40,40), filter_shape = (32,NUM_C,5,5),
+        up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,40,40), filter_shape = (128,NUM_C,5,5),
                             poolsize = 2 , W = layer0_w, b = layer0_b, 
                             activation = activation)
                             
-        up_layer1 = CPRStage_Up( image_shape = (1,32,18,18), filter_shape = (48,32,5,5), 
+        up_layer1 = CPRStage_Up( image_shape = (1,128,18,18), filter_shape = (256,128,5,5), 
                             poolsize = 2,W = layer1_w, b = layer1_b ,
                             activation = activation)
                             
-        up_layer2 = CPRStage_Up( image_shape = (1,48,7,7), filter_shape = (64,48,2,2), 
+        up_layer2 = CPRStage_Up( image_shape = (1,256,7,7), filter_shape = (512,256,2,2), 
                             poolsize = 2,W = layer2_w, b = layer2_b ,
                             activation = activation)
         # backward
-        down_layer2 = CPRStage_Down( image_shape = (1,64,6,6), filter_shape = (48,64,2,2), 
+        down_layer2 = CPRStage_Down( image_shape = (1,512,6,6), filter_shape = (256,512,2,2), 
                                 poolsize = 2,W =layer2_w, b = layer2_b,
                                 activation = activation)
                                 
-        down_layer1 = CPRStage_Down( image_shape = (1,48,14,14), filter_shape = (32,48,5,5), 
+        down_layer1 = CPRStage_Down( image_shape = (1,256,14,14), filter_shape = (128,256,5,5), 
                                 poolsize = 2,W =layer1_w, b = layer1_b,
                                 activation = activation)
                                 
-        down_layer0 = CPRStage_Down( image_shape = (1,32,36,36), filter_shape = (NUM_C,32,5,5), 
+        down_layer0 = CPRStage_Down( image_shape = (1,128,36,36), filter_shape = (NUM_C,128,5,5), 
                                 poolsize = 2,W = layer0_w, b = layer0_b,
                                 activation = activation)                                              
 

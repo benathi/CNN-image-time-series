@@ -31,7 +31,7 @@
                      layer_name: 'c2',
                      output_channels: 512,
                      irange: .05,
-                     kernel_shape: [3, 3],
+                     kernel_shape: [2, 2],
                      pool_shape: [2, 2],
                      pool_stride: [2, 2],
                      max_kernel_norm: 1.9365
