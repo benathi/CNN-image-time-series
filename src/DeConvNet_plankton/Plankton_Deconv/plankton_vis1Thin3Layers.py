@@ -129,7 +129,7 @@ def example1(model_file_name = "plankton_conv_visualize_model.pkl.params",
                             poolsize = 2,W = layer2_w, b = layer2_b ,
                             activation = activation)
         # backward
-        down_layer2 = CPRStage_Down( image_shape = (1,64,5,5), filter_shape = (48,64,3,3), 
+        down_layer2 = CPRStage_Down( image_shape = (1,64,4,4), filter_shape = (48,64,3,3), 
                                 poolsize = 2,W =layer2_w, b = layer2_b,
                                 activation = activation)
                                 
