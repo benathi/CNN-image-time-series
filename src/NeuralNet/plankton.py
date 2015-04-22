@@ -65,7 +65,7 @@ def dumpPlanktonData():
             ## Record image size here (28 by 28)
             #X[i,imageSize] = np.shape(image)[0]
             #X[i,imageSize+1] = np.shape(image)[1]
-            image = convertImage.process(image)
+            #image = convertImage.process(image)
             image = resize(image, (maxPixel, maxPixel))
             X[i,0:imageSize] = np.reshape(image, (1,imageSize))
             Y[i] = classIndex
