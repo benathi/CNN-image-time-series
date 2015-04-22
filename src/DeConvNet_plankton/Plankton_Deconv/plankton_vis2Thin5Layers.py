@@ -74,7 +74,10 @@ class DeConvNet( object ):
         layer1_b = params[-3]
         layer2_w = params[-6]
         layer2_b = params[-5]
-        
+        layer3_w = params[-8]
+        layer3_b = params[-7]
+        layer4_w = params[-10]
+        layer4_b = params[-9]                
         '''
         Note: after applying convolution, our weight is a weight per pixel
         whereas the weight here is per the whole array. Fix this by averaging for now
@@ -84,6 +87,8 @@ class DeConvNet( object ):
             layer0_b = np.mean(layer0_b, axis=(1,2))
             layer1_b = np.mean(layer1_b, axis=(1,2))
             layer2_b = np.mean(layer2_b, axis=(1,2))
+            layer3_b = np.mean(layer3_b, axis=(1,2))
+            layer4_b = np.mean(layer4_b, axis=(1,2))            
         else:
             print "Using b as matrix"
 
@@ -91,21 +96,32 @@ class DeConvNet( object ):
         x = T.tensor4('x')
  
         layer0 = ConvPoolLayer( input = x, image_shape = (1,NUM_C,40,40), 
-                                filter_shape = (32,NUM_C,5,5), W = layer0_w,
-                                b = layer0_b, poolsize=(2, 2), 
+                                filter_shape = (48,NUM_C,3,3), W = layer0_w,
+                                b = layer0_b, poolsize=(1, 1), 
                                 activation = relu_nonlinear)
                                 
-        layer1 = ConvPoolLayer( input = layer0.output, image_shape = (1,32,18,18), 
-                                filter_shape = (48,32,5,5), W = layer1_w, 
+        layer1 = ConvPoolLayer( input = layer0.output, image_shape = (1,48,38,38), 
+                                filter_shape = (96,48,3,3), W = layer1_w, 
                                 b = layer1_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear)
         
-        layer2 = ConvPoolLayer( input = layer1.output, image_shape = (1,48,7,7), 
-                                filter_shape = (64,48,2,2), W = layer2_w, 
-                                b = layer2_b, poolsize=(2, 2), 
+        layer2 = ConvPoolLayer( input = layer1.output, image_shape = (1,96,18,18), 
+                                filter_shape = (144,96,3,3), W = layer2_w, 
+                                b = layer2_b, poolsize=(1, 1), 
                                 activation = relu_nonlinear) 
+        layer3 = ConvPoolLayer( input = layer2.output, image_shape = (1,144,16,16), 
+                                filter_shape = (192,144,3,3), W = layer3_w, 
+                                b = layer3_b, poolsize=(2, 2), 
+                                activation = relu_nonlinear) 
+        layer4 = ConvPoolLayer( input = layer3.output, image_shape = (1,192,7,7), 
+                                filter_shape = (216,192,3,3), W = layer4_w, 
+                                b = layer4_b, poolsize=(2, 2), 
+                                activation = relu_nonlinear)         
+        
         print "Compiling theano.function..."
-        self.forward = theano.function( [x], layer2.output )
+        self.forward = theano.function( [x], layer4.output )
+        self.forward4 = theano.function( [x], layer4.output)
+        self.forward3 = theano.function( [x], layer3.output)
         self.forward2 = theano.function( [x], layer2.output)
         self.forward1 = theano.function( [x], layer1.output)
         self.forward0 = theano.function( [x], layer0.output)
@@ -121,7 +137,22 @@ class DeConvNet( object ):
         up_layer2 = CPRStage_Up( image_shape = (1,48,7,7), filter_shape = (64,48,2,2), 
                             poolsize = 2,W = layer2_w, b = layer2_b ,
                             activation = activation)
+        up_layer3 = CPRStage_Up( image_shape = (1,48,7,7), filter_shape = (64,48,2,2), 
+                            poolsize = 2,W = layer3_w, b = layer3_b ,
+                            activation = activation)
+        up_layer4 = CPRStage_Up( image_shape = (1,48,7,7), filter_shape = (64,48,2,2), 
+                            poolsize = 2,W = layer4_w, b = layer4_b ,
+                            activation = activation)        
+        
         # backward
+        down_layer4 = CPRStage_Down( image_shape = (1,64,6,6), filter_shape = (48,64,2,2), 
+                                poolsize = 2,W =layer4_w, b = layer4_b,
+                                activation = activation)
+        
+        down_layer3 = CPRStage_Down( image_shape = (1,64,6,6), filter_shape = (48,64,2,2), 
+                                poolsize = 2,W =layer3_w, b = layer3_b,
+                                activation = activation)
+        
         down_layer2 = CPRStage_Down( image_shape = (1,64,6,6), filter_shape = (48,64,2,2), 
                                 poolsize = 2,W =layer2_w, b = layer2_b,
                                 activation = activation)
@@ -134,8 +165,8 @@ class DeConvNet( object ):
                                 poolsize = 2,W = layer0_w, b = layer0_b,
                                 activation = activation)                                              
 
-        self.Stages = [ up_layer0, up_layer1, up_layer2,
-                           down_layer2, down_layer1, down_layer0]
+        self.Stages = [ up_layer0, up_layer1, up_layer2, up_layer3, up_layer4,
+                           down_layer4, down_layer3, down_layer2, down_layer1, down_layer0]
         
     def DeConv( self, input, kernel_index, which_layer=2 ):
 
@@ -144,29 +175,49 @@ class DeConvNet( object ):
         l0u , sw0 = self.Stages[0].GetOutput( input.reshape(1,NUM_C,MAX_PIXEL,MAX_PIXEL) )
         l1u  , sw1 = self.Stages[1].GetOutput( l0u )
         l2u  , sw2 = self.Stages[2].GetOutput( l1u )
-        
+        l3u  , sw3 = self.Stages[3].GetOutput( l2u )
+        l4u  , sw4 = self.Stages[4].GetOutput( l3u )               
         # only visualize selected kernel - set other output map to zeros
-        if which_layer == 2:
+        if which_layer == 4:
+            l4u[0,:kernel_index,...]*=0
+            l4u[0,kernel_index+1:,...]*=0
+            
+            l4d = self.Stages[5].GetOutput( l4u, sw4 )             
+            l3d = self.Stages[6].GetOutput( l4d, sw3 )            
+            l2d = self.Stages[7].GetOutput( l3d, sw2 )
+            l1d = self.Stages[8].GetOutput( l2d, sw1 )
+            l0d = self.Stages[9].GetOutput( l1d , sw0 )               
+        elif which_layer == 3:
+            l3u[0,:kernel_index,...]*=0
+            l3u[0,kernel_index+1:,...]*=0
+    
+            l3d = self.Stages[6].GetOutput( l3u, sw3 )            
+            l2d = self.Stages[7].GetOutput( l3d, sw2 )
+            l1d = self.Stages[8].GetOutput( l2d, sw1 )
+            l0d = self.Stages[9].GetOutput( l1d , sw0 )       
+        
+        elif which_layer == 2:
             l2u[0,:kernel_index,...]*=0
             l2u[0,kernel_index+1:,...]*=0
             
-            l2d = self.Stages[3].GetOutput( l2u, sw2 )
-            l1d = self.Stages[4].GetOutput( l2d, sw1 )
-            l0d = self.Stages[5].GetOutput( l1d , sw0 )
+            l2d = self.Stages[7].GetOutput( l2u, sw2 )
+            l1d = self.Stages[8].GetOutput( l2d, sw1 )
+            l0d = self.Stages[9].GetOutput( l1d , sw0 )
         elif which_layer == 1:
             l1u[0,:kernel_index,...]*=0
             l1u[0,kernel_index+1:,...]*=0
             
             #l2d = self.Stages[3].GetOutput( l2u, sw2 )
-            l1d = self.Stages[4].GetOutput( l1u, sw1 )
-            l0d = self.Stages[5].GetOutput( l1d , sw0 )
+            l1d = self.Stages[8].GetOutput( l1u, sw1 )
+            l0d = self.Stages[9].GetOutput( l1d , sw0 )
         elif which_layer == 0:
             l0u[0,:kernel_index,...]*=0
             l0u[0,kernel_index+1:,...]*=0
             
+            
             #l2d = self.Stages[3].GetOutput( l2u, sw2 )
             #l1d = self.Stages[4].GetOutput( l2d, sw1 )
-            l0d = self.Stages[5].GetOutput( l0u , sw0 )
+            l0d = self.Stages[9].GetOutput( l0u , sw0 )
         
         #l2d = self.Stages[3].GetOutput( l2u, sw2 )
         #l1d = self.Stages[4].GetOutput( l2d, sw1 )
@@ -212,7 +263,11 @@ def findmaxactivation( Net, samples, num_of_maximum, kernel_list, which_layer=2)
             print "pushpoping ",index,"th sample"  
         # from 3-dim to 4-dim
         sam = sam.reshape((1,)+sam.shape )      
-        if which_layer == 2:
+        if which_layer == 4:
+            activate_value = Net.forward4(sam)
+        elif which_layer == 3:
+            activate_value = Net.forward3(sam)
+        elif which_layer == 2:
             activate_value = Net.forward2(sam)
         elif which_layer == 1:
             activate_value = Net.forward1(sam)
@@ -254,8 +309,8 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
     """
     #which_layer = 2
     
-    import plankton_vis1Thin3Layers
-    samples = plankton_vis1Thin3Layers.loadSamplePlanktons(numSamples=numSamples,rotate=rotate, dim = 40)
+    import plankton_vis1Thin5Layers
+    samples = plankton_vis1Thin5Layers.loadSamplePlanktons(numSamples=numSamples,rotate=rotate, dim = 40)
     print 'Dimension of Samples', np.shape(samples)
     Net = DeConvNet(model_name, bScalar)
     
