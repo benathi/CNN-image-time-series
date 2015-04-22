@@ -77,7 +77,19 @@ class DeConvNet( object ):
         layer3_w = params[-8]
         layer3_b = params[-7]
         layer4_w = params[-10]
-        layer4_b = params[-9]                
+        layer4_b = params[-9]     
+        
+        print 'layer0_w shape', np.shape(layer0_w)
+        print 'layer0_b shape', np.shape(layer0_b)
+        print 'layer1_w shape', np.shape(layer1_w)
+        print 'layer1_b shape', np.shape(layer1_b)
+        print 'layer2_w shape', np.shape(layer2_w)
+        print 'layer2_b shape', np.shape(layer2_b)
+        print 'layer3_w shape', np.shape(layer3_w)
+        print 'layer3_b shape', np.shape(layer3_b)
+        print 'layer4_w shape', np.shape(layer4_w)
+        print 'layer4_b shape', np.shape(layer4_b)
+               
         '''
         Note: after applying convolution, our weight is a weight per pixel
         whereas the weight here is per the whole array. Fix this by averaging for now
@@ -127,7 +139,7 @@ class DeConvNet( object ):
         self.forward0 = theano.function( [x], layer0.output)
                                
         up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,40,40), filter_shape = (32,NUM_C,5,5),
-                            poolsize = 2 , W = layer0_w, b = layer0_b, 
+                            poolsize = 1 , W = layer0_w, b = layer0_b, 
                             activation = activation)
                             
         up_layer1 = CPRStage_Up( image_shape = (1,32,36,36), filter_shape = (48,32,5,5), 
@@ -135,7 +147,7 @@ class DeConvNet( object ):
                             activation = activation)
                             
         up_layer2 = CPRStage_Up( image_shape = (1,48,16,16), filter_shape = (64,48,3,3), 
-                            poolsize = 2,W = layer2_w, b = layer2_b ,
+                            poolsize = 1,W = layer2_w, b = layer2_b ,
                             activation = activation)
         up_layer3 = CPRStage_Up( image_shape = (1,64,14,14), filter_shape = (96,64,3,3), 
                             poolsize = 2,W = layer3_w, b = layer3_b ,
@@ -154,7 +166,7 @@ class DeConvNet( object ):
                                 activation = activation)
         
         down_layer2 = CPRStage_Down( image_shape = (1,64,14,14), filter_shape = (48,64,3,3), 
-                                poolsize = 2,W =layer2_w, b = layer2_b,
+                                poolsize = 1,W =layer2_w, b = layer2_b,
                                 activation = activation)
                                 
         down_layer1 = CPRStage_Down( image_shape = (1,48,32,32), filter_shape = (32,48,5,5), 
@@ -162,7 +174,7 @@ class DeConvNet( object ):
                                 activation = activation)
                                 
         down_layer0 = CPRStage_Down( image_shape = (1,32,36,36), filter_shape = (NUM_C,32,5,5), 
-                                poolsize = 2,W = layer0_w, b = layer0_b,
+                                poolsize = 1,W = layer0_w, b = layer0_b,
                                 activation = activation)                                              
 
         self.Stages = [ up_layer0, up_layer1, up_layer2, up_layer3, up_layer4,
