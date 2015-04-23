@@ -29,11 +29,11 @@ import theano
 theano.config.floatX = 'float32'
 
 NUM_C = 1
-size_l0 = 32
-size_l1 = (size_l0-4)/2 # 14
+size_l0 = 40
+size_l1 = (size_l0-4)/2 # 18
 size_l2 = (size_l1-4)/2 # 5
 
-MAX_PIXEL = 28
+MAX_PIXEL = 40
 
 model_directory = "../cifar10_sampleCode/Example/"
 trainedModelPath = "../../pylearn2_plankton/model_files/"
@@ -117,29 +117,29 @@ def example1(model_file_name = "plankton_conv_visualize_model.pkl.params",
     
     # forward
     # filter shape is shape of layer0_w
-    up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,28,28), filter_shape = (32,NUM_C,5,5),
+        up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,40,40), filter_shape = (128,NUM_C,5,5),
                             poolsize = 2 , W = layer0_w, b = layer0_b, 
                             activation = activation)
                             
-    up_layer1 = CPRStage_Up( image_shape = (1,32,12,12), filter_shape = (48,32,5,5), 
+        up_layer1 = CPRStage_Up( image_shape = (1,128,18,18), filter_shape = (256,128,5,5), 
                             poolsize = 2,W = layer1_w, b = layer1_b ,
                             activation = activation)
                             
-    up_layer2 = CPRStage_Up( image_shape = (1,48,4,4), filter_shape = (64,48,3,3), 
+        up_layer2 = CPRStage_Up( image_shape = (1,256,7,7), filter_shape = (512,256,2,2), 
                             poolsize = 2,W = layer2_w, b = layer2_b ,
                             activation = activation)
-    # backward
-    down_layer2 = CPRStage_Down( image_shape = (1,64,2,2), filter_shape = (48,64,3,3), 
+        # backward
+        down_layer2 = CPRStage_Down( image_shape = (1,512,6,6), filter_shape = (256,512,2,2), 
                                 poolsize = 2,W =layer2_w, b = layer2_b,
                                 activation = activation)
                                 
-    down_layer1 = CPRStage_Down( image_shape = (1,48,4*2,4*2), filter_shape = (32,48,5,5), 
+        down_layer1 = CPRStage_Down( image_shape = (1,256,14,14), filter_shape = (128,256,5,5), 
                                 poolsize = 2,W =layer1_w, b = layer1_b,
                                 activation = activation)
                                 
-    down_layer0 = CPRStage_Down( image_shape = (1,32,28-4,28-4), filter_shape = (NUM_C,32,5,5), 
+        down_layer0 = CPRStage_Down( image_shape = (1,128,36,36), filter_shape = (NUM_C,128,5,5), 
                                 poolsize = 2,W = layer0_w, b = layer0_b,
-                                activation = activation)
+                                activation = activation)                     
 
     
     # load sample images

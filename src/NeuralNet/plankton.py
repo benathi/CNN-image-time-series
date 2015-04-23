@@ -18,6 +18,7 @@ warnings.filterwarnings("ignore")
 import inspect
 import re
 import pickle
+import convertImage
 
 # get the classnames from the directory structure
 
@@ -27,7 +28,7 @@ import pickle
 
 def dumpPlanktonData():
     print 'Loading Plankton Data'
-    maxPixel = 28
+    maxPixel = 40
     imageSize = maxPixel*maxPixel
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     dataPath = '../../data/plankton'
@@ -62,8 +63,9 @@ def dumpPlanktonData():
             numInstancesPerClass += 1
             image = imread(filename, as_grey=True)
             ## Record image size here (28 by 28)
-            X[i,imageSize] = np.shape(image)[0]
-            X[i,imageSize+1] = np.shape(image)[1]
+            #X[i,imageSize] = np.shape(image)[0]
+            #X[i,imageSize+1] = np.shape(image)[1]
+            #image = convertImage.process(image)
             image = resize(image, (maxPixel, maxPixel))
             X[i,0:imageSize] = np.reshape(image, (1,imageSize))
             Y[i] = classIndex
@@ -83,8 +85,10 @@ def dumpPlanktonData():
     Y_info is a dictionary mapping index to input information: filename, classIndex, className
     labelMapText maps a class index to class name (text)
     '''
-    pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain.p'), 'wb'))
+    pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain40.p'), 'wb'))
     print 'Done dumping to pickle file'
+
+
 
 def loadDataSplitted_LeNetFormat():
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

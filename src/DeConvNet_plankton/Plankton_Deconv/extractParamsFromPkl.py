@@ -16,7 +16,7 @@ Usually, a model will be trained on a gpu unit. This method should be run on it 
 to extract numpy array values. (the extraction requires cuda, hence it needs to be run with gpu)
 After extracting, it saves the params with cPickle and we can load it directly.
 '''
-def recordModelParams(model_name = "plankton_conv_visualize_model.pkl"):
+def recordModelParams(model_name = "plankton_conv_visualize_model.pkl",numLayer = 3):
     model_path= trainedModelPath + model_name
     print 'Loading Model'
     model = serial.load(model_path)
@@ -27,7 +27,14 @@ def recordModelParams(model_name = "plankton_conv_visualize_model.pkl"):
     param_names = model.get_params()
     param_names = [tensorVar.name for tensorVar in param_names]
     print "Params Spec", param_names
-    layer_names = ['c2_W', 'c2_b', 'c1_W', 'c1_b', 'c0_W', 'c0_b']
+    layer_names = []
+    for i in range(numLayer):
+        strname = "c" + str(i) + "_b";
+        layer_names.append(strname)
+        strname = "c" + str(i) + "_W";
+        layer_names.append(strname)   
+#    layer_names = ['c2_W', 'c2_b', 'c1_W', 'c1_b', 'c0_W', 'c0_b']
+    layer_names.reverse()
     print "type", type(param_names[0])
     print "index of c0_W", param_names.index('c0_W')
     # assume there are 3 layers
@@ -43,6 +50,7 @@ if __name__ == "__main__":
     import sys
     try:
         pkl_filename = sys.argv[1]
+        numofLayers = int(sys.argv[2])
     except IndexError:
-        print 'Please specify model (.pkl) name in the argument. Eg. python extractParamsFromPkl.py plankton_conv_visualize_model.pkl'
-    recordModelParams(pkl_filename)
+        print 'Please specify model (.pkl) name in the argument and number of layers. Eg. python extractParamsFromPkl.py plankton_conv_visualize_model.pkl 5'
+    recordModelParams(pkl_filename, numofLayers)
