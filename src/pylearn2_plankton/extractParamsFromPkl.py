@@ -8,7 +8,7 @@ model run with gpu.
 '''
 from pylearn2.utils import serial
 import cPickle
-trainedModelPath = "../../pylearn2_plankton/model_files/"
+trainedModelPath = "model_files/"
 
 
 '''
