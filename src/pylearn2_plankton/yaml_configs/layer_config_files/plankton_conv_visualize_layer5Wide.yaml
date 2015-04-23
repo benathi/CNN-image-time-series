@@ -12,7 +12,7 @@
         },
         layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c0',
-                     output_channels:128,
+                     output_channels:64,
                      irange: .05,
                      kernel_shape: [3, 3],
                      pool_shape: [1, 1],
@@ -20,7 +20,7 @@
                      max_kernel_norm: 1.9365
                  }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c1',
-                     output_channels: 192,
+                     output_channels: 96,
                      irange: .05,
                      kernel_shape: [3, 3],
                      pool_shape: [2, 2],
@@ -29,7 +29,7 @@
                  }
                  , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c2',
-                     output_channels: 256,
+                     output_channels: 128,
                      irange: .05,
                      kernel_shape: [3, 3],
                      pool_shape: [1, 1],
@@ -38,7 +38,7 @@
                  }
                  , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c3',
-                     output_channels: 384,
+                     output_channels: 192,
                      irange: .05,
                      kernel_shape: [3, 3],
                      pool_shape: [2, 2],
@@ -47,7 +47,7 @@
                  }
                  , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c4',
-                     output_channels: 512,
+                     output_channels: 256,
                      irange: .05,
                      kernel_shape: [3, 3],
                      pool_shape: [2, 2],
