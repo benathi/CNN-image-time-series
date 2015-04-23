@@ -14,7 +14,7 @@ class PlanktonData(DenseDesignMatrix):
                  which_classes=None, maxPixel='40'):
         ''' Converting arguments to directly usable params '''
         classNames_all = ['diatom_chain_tube', 'fish_larvae_thin_body', 'echinoderm_larva_seastar_brachiolaria'
-                      #,'siphonophore_calycophoran_sphaeronectes','trochophore_larvae'
+                      ,'siphonophore_calycophoran_sphaeronectes','trochophore_larvae'
                       ]
         classNames = []
         if which_classes != None:
