@@ -1,7 +1,7 @@
 !obj:pylearn2.train.Train {
     dataset: &train !obj:pylearn2_plankton.plankton40Small.PlanktonData {
         which_set: 'train',
-        which_classes: [0,1,2]
+        which_classes: [0,1,2,3]
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 100,
@@ -62,7 +62,7 @@
                  , !obj:pylearn2.models.mlp.Softmax {
                      max_col_norm: 1.9365,
                      layer_name: 'y',
-                     n_classes: 3,
+                     n_classes: 4,
                      istdev: .05
                  }
                  # add fully connected layer before Softmax? 
@@ -79,7 +79,7 @@
             {
                 'valid' : !obj:pylearn2_plankton.plankton40Small.PlanktonData {
                               which_set: 'valid',
-                              which_classes: [0,1,2]
+                              which_classes: [0,1,2,3]
                           }
             },
         cost: !obj:pylearn2.costs.cost.SumOfCosts { costs: [
@@ -107,7 +107,7 @@
     extensions:
         [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "model_files/small/planktonSmall_0_3.pkl"
+             save_path: "model_files/small/planktonSmall_1_3.pkl"
         }, 
         !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
             start: 1,
