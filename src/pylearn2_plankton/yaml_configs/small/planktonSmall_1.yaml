@@ -62,7 +62,7 @@
                  , !obj:pylearn2.models.mlp.Softmax {
                      max_col_norm: 1.9365,
                      layer_name: 'y',
-                     n_classes: 3,
+                     n_classes: 4,
                      istdev: .05
                  }
                  # add fully connected layer before Softmax? 
