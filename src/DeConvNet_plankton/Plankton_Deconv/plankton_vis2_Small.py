@@ -106,27 +106,27 @@ class DeConvNet( object ):
 
         # compile theano function for efficient forward propagation
         x = T.tensor4('x')
- 
+        chs = [16, 16, 32, 32, 32]
         layer0 = ConvPoolLayer( input = x, image_shape = (1,NUM_C,40,40), 
-                                filter_shape = (32,NUM_C,5,5), W = layer0_w,
+                                filter_shape = (chs[0],NUM_C,5,5), W = layer0_w,
                                 b = layer0_b, poolsize=(1, 1), 
                                 activation = relu_nonlinear)
                                 
-        layer1 = ConvPoolLayer( input = layer0.output, image_shape = (1,32,36,36), 
-                                filter_shape = (48,32,5,5), W = layer1_w, 
+        layer1 = ConvPoolLayer( input = layer0.output, image_shape = (1,chs[0],36,36), 
+                                filter_shape = (chs[1],chs[0],5,5), W = layer1_w, 
                                 b = layer1_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear)
         
-        layer2 = ConvPoolLayer( input = layer1.output, image_shape = (1,48,16,16), 
-                                filter_shape = (64,48,3,3), W = layer2_w, 
+        layer2 = ConvPoolLayer( input = layer1.output, image_shape = (1,chs[1],16,16), 
+                                filter_shape = (chs[2],chs[1],3,3), W = layer2_w, 
                                 b = layer2_b, poolsize=(1, 1), 
                                 activation = relu_nonlinear) 
-        layer3 = ConvPoolLayer( input = layer2.output, image_shape = (1,64,14,14), 
-                                filter_shape = (96,64,3,3), W = layer3_w, 
+        layer3 = ConvPoolLayer( input = layer2.output, image_shape = (1,chs[2],14,14), 
+                                filter_shape = (chs[3],chs[2],3,3), W = layer3_w, 
                                 b = layer3_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear) 
-        layer4 = ConvPoolLayer( input = layer3.output, image_shape = (1,96,6,6), 
-                                filter_shape = (128,96,3,3), W = layer4_w, 
+        layer4 = ConvPoolLayer( input = layer3.output, image_shape = (1,chs[3],6,6), 
+                                filter_shape = (chs[4],chs[3],3,3), W = layer4_w, 
                                 b = layer4_b, poolsize=(2, 2), 
                                 activation = relu_nonlinear)         
         
@@ -138,42 +138,42 @@ class DeConvNet( object ):
         self.forward1 = theano.function( [x], layer1.output)
         self.forward0 = theano.function( [x], layer0.output)
                                
-        up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,40,40), filter_shape = (32,NUM_C,5,5),
+        up_layer0 = CPRStage_Up( image_shape = (1,NUM_C,40,40), filter_shape = (chs[0],NUM_C,5,5),
                             poolsize = 1 , W = layer0_w, b = layer0_b, 
                             activation = activation)
                             
-        up_layer1 = CPRStage_Up( image_shape = (1,32,36,36), filter_shape = (48,32,5,5), 
+        up_layer1 = CPRStage_Up( image_shape = (1,chs[0],36,36), filter_shape = (chs[1],chs[0],5,5), 
                             poolsize = 2,W = layer1_w, b = layer1_b ,
                             activation = activation)
                             
-        up_layer2 = CPRStage_Up( image_shape = (1,48,16,16), filter_shape = (64,48,3,3), 
+        up_layer2 = CPRStage_Up( image_shape = (1,chs[1],16,16), filter_shape = (chs[2],chs[1],3,3), 
                             poolsize = 1,W = layer2_w, b = layer2_b ,
                             activation = activation)
-        up_layer3 = CPRStage_Up( image_shape = (1,64,14,14), filter_shape = (96,64,3,3), 
+        up_layer3 = CPRStage_Up( image_shape = (1,chs[2],14,14), filter_shape = (chs[3],chs[2],3,3), 
                             poolsize = 2,W = layer3_w, b = layer3_b ,
                             activation = activation)
-        up_layer4 = CPRStage_Up( image_shape = (1,96,6,6), filter_shape = (128,96,3,3), 
+        up_layer4 = CPRStage_Up( image_shape = (1,chs[3],6,6), filter_shape = (chs[4],chs[3],3,3), 
                             poolsize = 2,W = layer4_w, b = layer4_b ,
                             activation = activation)        
         
         # backward
-        down_layer4 = CPRStage_Down( image_shape = (1,128,4,4), filter_shape = (96,128,3,3), 
+        down_layer4 = CPRStage_Down( image_shape = (1,chs[4],4,4), filter_shape = (chs[3],chs[4],3,3), 
                                 poolsize = 2,W =layer4_w, b = layer4_b,
                                 activation = activation)
         
-        down_layer3 = CPRStage_Down( image_shape = (1,96,12,12), filter_shape = (64,96,3,3), 
+        down_layer3 = CPRStage_Down( image_shape = (1,chs[3],12,12), filter_shape = (chs[2],chs[3],3,3), 
                                 poolsize = 2,W =layer3_w, b = layer3_b,
                                 activation = activation)
         
-        down_layer2 = CPRStage_Down( image_shape = (1,64,14,14), filter_shape = (48,64,3,3), 
+        down_layer2 = CPRStage_Down( image_shape = (1,chs[2],14,14), filter_shape = (chs[1],chs[2],3,3), 
                                 poolsize = 1,W =layer2_w, b = layer2_b,
                                 activation = activation)
                                 
-        down_layer1 = CPRStage_Down( image_shape = (1,48,32,32), filter_shape = (32,48,5,5), 
+        down_layer1 = CPRStage_Down( image_shape = (1,chs[1],32,32), filter_shape = (chs[0],chs[1],5,5), 
                                 poolsize = 2,W =layer1_w, b = layer1_b,
                                 activation = activation)
                                 
-        down_layer0 = CPRStage_Down( image_shape = (1,32,36,36), filter_shape = (NUM_C,32,5,5), 
+        down_layer0 = CPRStage_Down( image_shape = (1,chs[0],36,36), filter_shape = (NUM_C,chs[0],5,5), 
                                 poolsize = 1,W = layer0_w, b = layer0_b,
                                 activation = activation)                                              
 
@@ -313,6 +313,38 @@ def printHeaps(Heaps):
         for p in Heaps[key]:
             print "\tActivation = {} Input Sam {}".format(p.act, np.shape(p.sam))
 
+def loadSamplePlanktons(numSamples=100, rotate=False, dim=28):
+    if dim == 28:
+        if not rotate:
+            from pylearn2_plankton.planktonDataPylearn2 import PlanktonData
+            ds = PlanktonData(which_set='train')
+            designMatrix = ds.get_data()[0] # index 1 is the label
+            print "Shape of Design Matrix", np.shape(designMatrix)
+            designMatrix = np.reshape(designMatrix, 
+                                      (ds.get_num_examples(), 1, MAX_PIXEL, MAX_PIXEL) )
+            if numSamples != 'All':
+                return np.array(designMatrix[:numSamples,...], dtype=np.float32)
+            else:
+                return np.array(designMatrix, dtype=np.float32)
+        else:
+            print "Loading Rotated Data"
+            designMatrix = np.load(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedX.p'), 'r'))
+            return np.reshape(np.array(designMatrix[:numSamples,...], dtype=np.float32),
+                              (numSamples,1,MAX_PIXEL,MAX_PIXEL))
+    elif dim == 40:
+        from pylearn2_plankton.plankton40Small import PlanktonData
+        ds = PlanktonData(which_set='train')
+        designMatrix = ds.get_data()[0] # index 1 is the label
+        print "Shape of Design Matrix", np.shape(designMatrix)
+        designMatrix = np.reshape(designMatrix, 
+                                  (ds.get_num_examples(), 1, 40, 40) )
+        if numSamples != 'All':
+            return np.array(designMatrix[:numSamples,...], dtype=np.float32)
+        else:
+            return np.array(designMatrix, dtype=np.float32)
+
+
+
 def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=False, bScalar=False, 
                   start=0, end=16, which_layer=2,
                   numSamples=1000):
@@ -321,8 +353,8 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
     """
     #which_layer = 2
     
-    import plankton_vis1Thin3Layers
-    samples = plankton_vis1Thin3Layers.loadSamplePlanktons(numSamples=numSamples,rotate=rotate, dim = 40)
+    
+    samples = loadSamplePlanktons(numSamples=numSamples,rotate=rotate, dim = 40)
     print 'Dimension of Samples', np.shape(samples)
     Net = DeConvNet(model_name, bScalar)
     
@@ -375,15 +407,21 @@ def Find_plankton(model_name="plankton_conv_visualize_model.pkl.params", rotate=
     plt.imshow(bigbigmap)
     plt.show()
 
+yaml_directories = '../../yaml_configs/'
+def yamlReadder():
+    import yaml
+    stream = open("example.yaml", 'r')
+    print yaml.load(stream)
+
 if __name__ == "__main__":
-    print 'Example: python plankton_vis2.py-rotate -start 16 -end 32 -layer 1'
+    print 'Example: python plankton_vis2.py -rotate -start 16 -end 32 -layer 1'
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-rotate', action="store_true", default=False)
-    parser.add_argument('-paramsname', action="store", default='plankton_conv_visualize_model.pkl.params')
+    parser.add_argument('-rotate', action="store_true", default=True)
+    parser.add_argument('-paramsname', action="store", default='small/planktonSmall_0_2.pkl.params')
     parser.add_argument('-start', action="store", default=0, type=int)
     parser.add_argument('-end', action="store", default=16, type=int)
-    parser.add_argument('-layer', action="store", default=2, type=int)
+    parser.add_argument('-layer', action="store", default=4, type=int)
     parser.add_argument('-bScalar', action="store_true", default=True) # set default to false after fixing
     results = parser.parse_args()
     rotate = results.rotate
