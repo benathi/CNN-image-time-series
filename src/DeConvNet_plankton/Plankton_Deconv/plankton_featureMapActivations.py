@@ -186,7 +186,7 @@ def main(model_name="plankton_conv_visualize_model.pkl.params",
     samples = plankton_vis1.loadSamplePlanktons(numSamples, rotate)
     print 'Dimension of Samples', np.shape(samples)
     activations = findActivations(model_name, samples, which_layer, 
-                                  allFeats=False, bScalar=False)
+                                  allFeats=False, bScalar=True)
     y_labels = plankton_utils.getY_label_int(which_data='train')
     activation_dict = separateActivationsByClass(activations, y_labels)
     #calculateAverageActivations(activation_dict, which_layer)
