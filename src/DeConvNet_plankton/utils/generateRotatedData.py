@@ -26,14 +26,16 @@ def dumpTrainDataRotated(which_set='train_rotate'):
             np.save(open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrainRotatedY.p'), 'wb'), Yr)
             print "Done dumping to file"
             
-
-def generateRotatedData(X,Y):
+'''
+Returns a tuple
+'''
+def generateRotatedData(X,Y, MAX_PIXEL=28):
     num_samples = np.shape(X)[0]
     X = np.reshape(X, (num_samples, MAX_PIXEL, MAX_PIXEL))
     num_rotations = 12
     new_num_samples = num_rotations*num_samples
-    Xr = np.zeros( (new_num_samples, MAX_PIXEL, MAX_PIXEL) )
-    Yr = np.ones( (new_num_samples))
+    Xr = np.zeros( (new_num_samples, MAX_PIXEL, MAX_PIXEL) , dtype=np.float32)
+    Yr = np.ones( (new_num_samples) )
     for rot  in range(num_rotations):
         print "Rotation", rot
         for i in xrange(num_samples):
