@@ -11,6 +11,7 @@ from ggplot import *
 import skimage
 from skimage.viewer import ImageViewer
 from matplotlib import pyplot as plt
+import matplotlib.cm as cm
 import os,sys
 parent_folder = os.path.abspath('..')
 class_path = parent_folder + '/' + 'DeConvNet'
@@ -20,73 +21,117 @@ class_path = parent_folder + '/' + 'utils'
 if class_path not in sys.path:
     sys.path.append( class_path )
 
-from generateRotatedData import generateRotatedData # part of utils
+from generateRotatedData import generateRotatedDataPreserveDim # part of utils
 
-def generateRotatedMinibatch():
+
+def choose_samples(indices=[0,3,6,16]):
     import plankton_vis1
-    samples = plankton_vis1.loadSamplePlanktons(100) # 100,1,28,28
+    samples = plankton_vis1.loadSamplePlanktons(20) # 100,1,28,28
     if False:
         for i, sample in enumerate(samples):
             print 'Showing sample ',i
-            plt.imshow(sample)
+            plt.imshow(sample[0], cmap = cm.Greys_r)
             plt.show()
-    rotationalSym_indicies = [0,3,6,16] # just to keep track of which index we can use
-    
-    chosen_plank = samples[[0]]
-    rotatedSamples = generateRotatedData(chosen_plank,[0])
-    #print 'rotated samples', rotatedSamples
+    return samples[indices]
+
+def generateRotatedMinibatch(samples, indicies, numRotations):
+    # just to keep track of which index we can use
+    ''' The samples has shape (100,1,28,28) for example'''
+    print 'at rotated minibatch: shape of samples', samples.shape
+    rotatedSamples = generateRotatedDataPreserveDim(samples, indicies)
     print 'shape of rotated samples', np.shape(rotatedSamples[0])
-    return rotatedSamples[0] # only the X
+    return rotatedSamples # only the X
 
-def calculateInvarianceScores(model_name, which_layer):
+
+'''
+acts:    activation matrix
+        (num rotations, numFeatures)
+'''
+def rInvScore(acts):
+    num_feats = acts.shape[1]
+    print 'Number of features', num_feats
+    #print 'Activations = ', acts
+    scores = np.zeros((num_feats))
+    for feat_idx in range(num_feats):
+        _min = np.min(acts[:,feat_idx])
+        _max = np.max(acts[:,feat_idx])
+        scores[feat_idx] = max(0,_min)/_max
+        if _max == 0:
+            scores[feat_idx] = 0
+    return scores
+
+def calculateInvarianceScores(samples, indices, model_name, which_layer, numRotations=12):
     from plankton_featureMapActivations import findActivations
-    samples = generateRotatedMinibatch()
+    rotatedSamples, sample_indices = generateRotatedMinibatch(samples, indices,
+                                                              numRotations)
     print 'shape of samples before findActivations', samples.shape
-    findActivations(model_name, samples,
+    activations = findActivations(model_name, rotatedSamples,
                     which_layer=2, allFeats=True, cache=False)
+    print 'shape of activations', activations.shape
     ''' output a dictionary '''
+    dictSampleRotation = {}
+    for num, idx in enumerate(indices):
+        dictSampleRotation[idx] = activations[num*numRotations:(num+1)*numRotations]
+    
+    # format: key = sample_index, value = [rinv_0, r_inv1, ...]
+    rInvScoreDict = {}
+    for key in dictSampleRotation:
+        rInvScoreDict[key] = rInvScore(dictSampleRotation[key])
+    
+    #print rInvScoreDict
+    return rInvScoreDict
+    
 
-def plotRinvariance(featuresDict, which_layer=2, savePlots=True):
-    print 'shape of featuresDict[0]', featuresDict[0].shape
-    numFeatures = np.shape(featuresDict[0])[1]
-    for class_num in featuresDict:
-        print 'class', class_num
-        filename = 'results/allActivationsVis/layer' + str(which_layer) \
-            + '/activationLayer' + str(which_layer) \
-            + 'Class' + str(class_num) + '.pdf'
-        num_points = featuresDict[class_num].shape[0]
-        
-        bigy = featuresDict[class_num].flatten()
-        bigx = range(numFeatures)*num_points
-        bigvar = []
-        for _k in range(num_points):
-            bigvar += [_k]*numFeatures
-            # maybe use string
-        
-        df = pd.DataFrame({"x":bigx,
-                           "y":bigy,
-                           "sample":bigvar
-                           })
-        _plot = ggplot(aes(x='x', y='y', color='sample'), df) + xlab('Feature') + ylab('Activation') \
-        + ggtitle('Average Activation for Class' + str(class_num) + ' Layer' + str(which_layer) ) \
-        + geom_line() + geom_point()
-        
-        '''
-        for _j in range(num_points):
-            print 'add plot ', _j
-            _df = pd.DataFrame({"x":range(numFeatures),
-                                "y":featuresDict[class_num][_j]
-                                })
-            _plot + geom_point(data=_df)
-        '''
-        #print _plot
-        if savePlots:
-            ggsave(_plot, filename, width=16, height=6)
+def plotRinvariance(scoresDict, which_layer=2, savePlots=True):
+    numPlots = len(scoresDict.keys())
+    numFeatures = scoresDict[0].shape[0] # first 0 is in the key
+    idx = scoresDict.keys()
+    
+    bigx = range(numFeatures)*numPlots
+    bigy = []
+    for id in idx:
+        bigy.append(scoresDict[id])
+    bigy = np.array(bigy)
+    bigy = bigy.flatten()
+    bigkey = []
+    for id in idx:
+        for n in range(numFeatures):
+            bigkey.append(str(id))
+    
+    print len(bigx)
+    print len(bigy)
+    print len(bigkey)
+    
+    df = pd.DataFrame({"x":bigx,
+                       "y":bigy,
+                       "sample":bigkey
+                       })
+    plot = (ggplot(aes(x='x', y='y', color='sample'), df) +
+    xlab('Feature') + ylab('Rotationally Invariant Scores')
+    + ggtitle('Rotationally Invariance Scores of Features')
+    #+ geom_line(alpha=0.5) 
+    + geom_point(alpha=0.5))
+    
+    print plot
+    # note: issue for legend not showing
+    '''
+    fig = plot.draw()
+    ax = fig.axes[0]
+    offbox = ax.artists[0]
+    offbox.set_bbox_to_anchor((1, 0.5), ax.transAxes)
+    print fig
+    '''
+
+
 
 def plotInvarianceScores_main(model_name, which_layer=2):
-    rInvarianceScores = calculateInvarianceScores(model_name, which_layer)
+    indices = [0,3,6,16]
+    chosen_samples = choose_samples(indices)
+    rInvarianceScores = calculateInvarianceScores(chosen_samples, indices,
+                                                  model_name, 
+                                                  which_layer,
+                                                  numRotations=12)
     plotRinvariance(rInvarianceScores, which_layer)
-
 
 def main():
     import argparse

@@ -41,6 +41,7 @@ def findActivations(model_name, samples,
             return np.load(file(activations_filename, 'r'))
     Cnn = DeConvNet(model_name, bScalar)
     # Construct activations matrix
+    print 'Shape of samples is ', samples.shape
     numSamples = np.shape(samples)[0]   # 
     print 'Shape of sample 0 is', samples[0].shape
     first_sample = samples[0].reshape((1,) + samples[0].shape )  
