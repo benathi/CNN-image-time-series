@@ -28,19 +28,21 @@ if class_path not in sys.path:
     sys.path.append( class_path )
 import plankton_utils
 
-def findActivations(Cnn, samples,
-                    which_layer=2, allFeats=True):
+def findActivations(model_name, samples,
+                    which_layer=2, allFeats=False, bScalar=True, cache=False):
     print "Finding Activation Values at Layer", which_layer
-    if allFeats:
-        activations_filename = 'activations_layer' + str(which_layer) + '_allFeats'  +'.npy'
-    else:
-        activations_filename = 'activations_layer' + str(which_layer) +'.npy'
-    if os.path.isfile(activations_filename):
-        print 'Loading Activations from files'
-        return np.load(file(activations_filename, 'r'))
-    
+    if cache:
+        if allFeats:
+            activations_filename = 'activations_layer' + str(which_layer) + '_allFeats'  +'.npy'
+        else:
+            activations_filename = 'activations_layer' + str(which_layer) +'.npy'
+        if os.path.isfile(activations_filename):
+            print 'Loading Activations from files'
+            return np.load(file(activations_filename, 'r'))
+    Cnn = DeConvNet(model_name, bScalar)
     # Construct activations matrix
-    numSamples = np.shape(samples)[0]
+    numSamples = np.shape(samples)[0]   # 
+    print 'Shape of sample 0 is', samples[0].shape
     first_sample = samples[0].reshape((1,) + samples[0].shape )  
     
     if which_layer == 2:
@@ -73,7 +75,8 @@ def findActivations(Cnn, samples,
             activations[i] = activate_value.flatten() # note: first axis is simply batch size
         else:
             activations[i] = np.mean(activate_value, axis=(2,3))
-    np.save(open(activations_filename, 'w'), activations)
+    if cache:
+        np.save(open(activations_filename, 'w'), activations)
     return activations
 
 def separateActivationsByClass(activations, y_labels):
@@ -137,18 +140,57 @@ def getAverageActivationsMatrix(which_layer=2, allFeats=False):
     else:
         return np.load(open('average_activationsLayer' + str(which_layer) + '.npy', 'r'))
 
+''' A method to plot all activations as lines '''
+def plotFeatures(featuresDict, which_layer=2, savePlots=True):
+    print 'shape of featuresDict[0]', featuresDict[0].shape
+    numFeatures = np.shape(featuresDict[0])[1]
+    for class_num in featuresDict:
+        print 'class', class_num
+        filename = 'results/allActivationsVis/layer' + str(which_layer) \
+            + '/activationLayer' + str(which_layer) \
+            + 'Class' + str(class_num) + '.pdf'
+        num_points = featuresDict[class_num].shape[0]
+        
+        bigy = featuresDict[class_num].flatten()
+        bigx = range(numFeatures)*num_points
+        bigvar = []
+        for _k in range(num_points):
+            bigvar += [_k]*numFeatures
+            # maybe use string
+        
+        df = pd.DataFrame({"x":bigx,
+                           "y":bigy,
+                           "sample":bigvar
+                           })
+        _plot = ggplot(aes(x='x', y='y', color='sample'), df) + xlab('Feature') + ylab('Activation') \
+        + ggtitle('Average Activation for Class' + str(class_num) + ' Layer' + str(which_layer) ) \
+        + geom_line() + geom_point()
+        
+        '''
+        for _j in range(num_points):
+            print 'add plot ', _j
+            _df = pd.DataFrame({"x":range(numFeatures),
+                                "y":featuresDict[class_num][_j]
+                                })
+            _plot + geom_point(data=_df)
+        '''
+        #print _plot
+        if savePlots:
+            ggsave(_plot, filename, width=16, height=6)
+        
     
 def main(model_name="plankton_conv_visualize_model.pkl.params",
          rotate=False, bScalar=True, 
-         which_layer=0, numSamples='All'):
+         which_layer=2, numSamples='All'):
     import plankton_vis1
     samples = plankton_vis1.loadSamplePlanktons(numSamples, rotate)
     print 'Dimension of Samples', np.shape(samples)
-    Cnn = DeConvNet(model_name, bScalar)
-    activations = findActivations(Cnn, samples, which_layer, allFeats=False)
+    activations = findActivations(model_name, samples, which_layer, 
+                                  allFeats=False, bScalar=False)
     y_labels = plankton_utils.getY_label_int(which_data='train')
     activation_dict = separateActivationsByClass(activations, y_labels)
-    calculateAverageActivations(activation_dict, which_layer)
+    #calculateAverageActivations(activation_dict, which_layer)
+    plotFeatures(activation_dict, which_layer)
     
 
 if __name__ == "__main__":
