@@ -198,11 +198,11 @@ def getdepth(clust):
 def drawdendrogram(clust,imlist,jpeg='clusters.jpg'):
     # height and width
     h=getheight(clust)*50
-    w=2000
+    w=4000
     depth=getdepth(clust)
     
     # width is fixed, so scale distances accordingly
-    scaling=float(w-150)/depth
+    scaling=float(w-250)/depth
     
     # Create a new image with a white background
     img=Image.new('RGB',(w,h),(255,255,255))
@@ -212,6 +212,7 @@ def drawdendrogram(clust,imlist,jpeg='clusters.jpg'):
     
     # Draw the first node
     drawnode(draw,clust,10,(h/2),scaling,imlist,img)
+    print 'saving image to ', jpeg
     img.save(jpeg)
 
 def drawnode(draw,clust,x,y,scaling,imlist,img):
@@ -223,13 +224,13 @@ def drawnode(draw,clust,x,y,scaling,imlist,img):
         # Line length
         ll=clust.distance*scaling
         # Vertical line from this cluster to children    
-        draw.line((x,top+h1/2,x,bottom-h2/2),fill=(255,0,0))    
+        draw.line((x,top+h1/2,x,bottom-h2/2),fill=(0,86,129),width=5)    
         
         # Horizontal line to left item
-        draw.line((x,top+h1/2,x+ll,top+h1/2),fill=(255,0,0))    
+        draw.line((x,top+h1/2,x+ll,top+h1/2),fill=(0,86,129),width=5)    
         
         # Horizontal line to right item
-        draw.line((x,bottom-h2/2,x+ll,bottom-h2/2),fill=(255,0,0))        
+        draw.line((x,bottom-h2/2,x+ll,bottom-h2/2),fill=(0,86,129),width=5)        
         
         # Call the function to draw the left and right nodes    
         drawnode(draw,clust.left,x+ll,top+h1/2,scaling,imlist,img)
@@ -238,7 +239,7 @@ def drawnode(draw,clust,x,y,scaling,imlist,img):
         # If this is an endpoint, draw a thumbnail image
         print 'clust.id ', clust.id
         nodeim = Image.open(imlist[clust.id])
-        nodeim.thumbnail((IMG_SIZE*2,IMG_SIZE*2))
+        nodeim.thumbnail((int(IMG_SIZE*2.5),int(IMG_SIZE*3)))
         ns = nodeim.size
         print 'argument to img.paste',(int(x),y-ns[1]//2,int(x+ns[0]),y+ns[1]-ns[1]//2) 
         img.paste(nodeim,(int(x),y-ns[1]//2,int(x+ns[0]),y+ns[1]-ns[1]//2))
@@ -246,8 +247,8 @@ def drawnode(draw,clust,x,y,scaling,imlist,img):
 
 def test():
     #generateDendrogram('complete')
-    #generateDendrogram(which_layer=2)
-    #generateDendrogram(which_layer=1)
+    generateDendrogram(which_layer=2)
+    generateDendrogram(which_layer=1)
     generateDendrogram(which_layer=0)
 
 if __name__ == '__main__':
