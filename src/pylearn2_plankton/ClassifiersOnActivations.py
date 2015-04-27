@@ -140,7 +140,7 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'Obtaining Activations'
     X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
     print 'Running Random Forests'
-    for i in range(10):
+    for i in range(4):
         print '\tRF Trial', i
         trainRF(X_train, Y_train, X_test, Y_test, model_name)
     trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=True)
