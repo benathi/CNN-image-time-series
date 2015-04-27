@@ -11,7 +11,7 @@ many types of data set (train, test, valid)
 and an option for augmented data
 '''
 class PlanktonData(DenseDesignMatrix):
-    def __init__(self, which_set='train', maxPixel, rotate=False):
+    def __init__(self, which_set, maxPixel, rotate=False):
         # to support 28,40,95
         assert maxPixel in [28, 40], \
         'max pixel %r is not supported (only %r supported)' % (maxPixel, [28, 40])
