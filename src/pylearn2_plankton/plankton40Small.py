@@ -56,7 +56,7 @@ class PlanktonData(DenseDesignMatrix):
         
         # 4. Rotating 
         if rotate == 'true':
-            X_rotated, Y_rotated = generateRotatedData(X,Y, MAX_PIXEL=maxPixel)
+            X_rotated, Y_rotated = generateRotatedData(X,Y, maxPixel=maxPixel)
         else:
             X_rotated, Y_rotated = X,Y
         dataSize_afterRotated = X_rotated.shape[0]
@@ -93,16 +93,16 @@ class PlanktonData(DenseDesignMatrix):
     
 # The pixel values are already from 0 to 1    
 
-def generateRotatedData(X,Y, MAX_PIXEL=40):
+def generateRotatedData(X,Y, maxPixel=40):
     from skimage.transform import rotate
     from skimage.io import imshow
     from matplotlib import pyplot as plt
     
     num_samples = np.shape(X)[0]
-    X = np.reshape(X, (num_samples, MAX_PIXEL, MAX_PIXEL))
+    X = np.reshape(X, (num_samples, maxPixel, maxPixel))
     num_rotations = 12
     new_num_samples = num_rotations*num_samples
-    Xr = np.zeros( (new_num_samples, MAX_PIXEL, MAX_PIXEL) )
+    Xr = np.zeros( (new_num_samples, maxPixel, maxPixel) )
     Yr = np.ones( (new_num_samples))
     for rot  in range(num_rotations):
         #print "Rotation", rot
@@ -113,7 +113,7 @@ def generateRotatedData(X,Y, MAX_PIXEL=40):
                 plt.imshow(Xr[num_samples*rot])
                 plt.show()
         Yr[rot*num_samples:(rot+1)*num_samples] = Y
-    Xr = np.reshape(Xr, (new_num_samples, MAX_PIXEL*MAX_PIXEL))
+    Xr = np.reshape(Xr, (new_num_samples, maxPixel*maxPixel))
     
     # shuffle
     np.random.seed(987)

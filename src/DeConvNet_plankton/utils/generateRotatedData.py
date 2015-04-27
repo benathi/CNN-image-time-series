@@ -49,6 +49,7 @@ def generateRotatedData(X,Y, MAX_PIXEL=28, flatten=True):
         Xr = np.reshape(Xr, (new_num_samples, MAX_PIXEL*MAX_PIXEL))
     
     # shuffle
+    np.random.seed(14249)
     randPermutation = np.random.permutation(new_num_samples)
     Xr = Xr[randPermutation]
     Yr = Yr[randPermutation]
