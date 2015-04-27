@@ -102,7 +102,9 @@ class PlanktonData(DenseDesignMatrix):
 '''
 def generateRotatedData(X,Y, maxPixel=28, num_rotations=12):
     from skimage.transform import rotate
+    X = X[:,:maxPixel*maxPixel]
     num_samples = np.shape(X)[0]
+    print 'initial shape', X.shape
     X = np.reshape(X, (num_samples, maxPixel, maxPixel))
     new_num_samples = num_rotations*num_samples
     Xr = np.zeros( (new_num_samples, maxPixel, maxPixel) , dtype=np.float32)
