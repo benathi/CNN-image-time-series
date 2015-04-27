@@ -76,7 +76,7 @@ class PlanktonData(DenseDesignMatrix):
                 stop = 26500
             elif which_set == 'test':
                 start = 26500
-                stop = X.shape[0]
+                stop = int(X.shape[0]/100)*100
         else:
             # rotate
             if which_set == 'train':
@@ -87,7 +87,7 @@ class PlanktonData(DenseDesignMatrix):
                 stop = 26000*12
             elif which_set == 'test':
                 start = 26000*12
-                stop = X.shape[0]
+                stop = int(X.shape[0]/100)*100
 
         X = X[start:stop, :]
         Y_oneHot = Y_oneHot[start:stop, :]
