@@ -84,7 +84,7 @@ def dumpPlanktonData(maxPixel=40):
     Y_info is a dictionary mapping index to input information: filename, classIndex, className
     labelMapText maps a class index to class name (text)
     '''
-    pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain40.p'), 'wb'))
+    pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain' + str(maxPixel) +'.p'), 'wb'))
     print 'Done dumping to pickle file'
 
 
