@@ -24,7 +24,7 @@ if class_path not in sys.path:
 '''
 Note: format of Y_train is 
 '''
-def trainRF(X_train, Y_train, model_name, cache=False, n_estimators=300):
+def trainRF(X_train, Y_train, model_name, cache=False, n_estimators=500):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
     print 'Training RF - RF Model Filename =', rf_filename
@@ -124,8 +124,10 @@ def predictionScores(cl, X_test, Y_test):
 
 def rfOnActivationsPerformance(model_name, data):
     X_train, Y_train, X_test, Y_test= prepXY(data, model_name)
-    rf_cl = trainRF(X_train, Y_train, model_name)
-    predictionScores(rf_cl, X_test, Y_test)
+    for i in range(10):
+        print 'RF Trial', i
+        rf_cl = trainRF(X_train, Y_train, model_name)
+        predictionScores(rf_cl, X_test, Y_test)
     svm_clf = trainSVM(X_train, Y_train, model_name, one_vs_rest=True)
     predictionScores(svm_clf, X_test, Y_test)
     svm_clf2 = trainSVM(X_train, Y_train, model_name, one_vs_rest=False)

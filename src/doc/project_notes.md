@@ -30,3 +30,20 @@ April 18
 
 April 19
 	- 
+
+TODO
+
+Data 
+	- Make it support size 40 and 95
+	- make train/test very clear 
+		- still using pickle to store data (non-augmented)
+		- for augmented data, rotate on the fly and do shuffling with seed fixed
+			- in order to be replicable on other machine
+		-
+
+
+Pylearn2/theano CNN
+	- figure out a way to make use yaml config directly and use weights trained from GPU?
+		- or just run it on GPU to make it consistently:
+			- this might be a good solution for now
+	
