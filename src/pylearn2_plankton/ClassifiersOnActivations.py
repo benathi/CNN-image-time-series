@@ -108,7 +108,8 @@ def findActivations(model_name, listX_raw, which_layer, maxPixel):
 
 def getRawData(data_spec, which_set, maxPixel):
     print 'Loading Raw Data set', which_set
-    PC = __import__('pylearn2_plankton.planktonDataConsolidated', fromlist=['planktonDataConsolidated'])
+    #PC = __import__('pylearn2_plankton.planktonDataConsolidated', fromlist=['planktonDataConsolidated'])
+    PC = __import__('pylearn2_plankton.planktonDataConsolidated', fromlist=[data_spec.split('.')[1]])
     ds = PC.PlanktonData(which_set, maxPixel)
     designMatrix = ds.get_data()[0] # index 1 is the label
     Y = ds.get_data()[1]
@@ -141,9 +142,17 @@ def predictionScores(cl, X_test, Y_test):
     print 'Accuracy Score = ', cl.score(X_test, Y_test)
 
 def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
+    print '\n-----#####-----#####-----#####-----#####-----#####-----#####'
+    print 'Performing Tests using Activations on other classifiers'
+    print 'pklname', model_name
+    print 'data_spec', data_spec
+    print 'which_layer', which_layer
+    print 'maxPixel', maxPixel
+    print 'Obtaining Activations'
     X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
+    print 'Running Random Forests'
     for i in range(10):
-        print 'RF Trial', i
+        print '\tRF Trial', i
         trainRF(X_train, Y_train, X_test, Y_test, model_name)
     trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=True)
     trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=False)
@@ -154,7 +163,7 @@ if __name__ == '__main__':
     parser.add_argument('-layer', action="store", default=2, type=int)
     #parser.add_argument('-yaml', action="store", default='plankton_conv_visualize_model.yaml')
     parser.add_argument('-pklname', action="store", default='model_files/plankton_conv_visualize_model.pkl')
-    parser.add_argument('-data', action="store", default='pylearn2_plankton.planktonDataPylearn2')
+    parser.add_argument('-data', action="store", default='pylearn2_plankton.planktonDataConsolidated')
     parser.add_argument('-maxpix', action="store", default=28, type=int)
     allArgs = parser.parse_args()
     rfOnActivationsPerformance(model_name=allArgs.pklname,
