@@ -24,7 +24,7 @@ if class_path not in sys.path:
 '''
 Note: format of Y_train is 
 '''
-def trainRF(X_train, Y_train, model_name, cache=False, n_estimators=500):
+def trainRF(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimators=500):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
     print 'Training RF - RF Model Filename =', rf_filename
@@ -43,9 +43,9 @@ def trainRF(X_train, Y_train, model_name, cache=False, n_estimators=500):
         print 'Saving Model to Disk'
         pickle.dump(rf_clf, open(rf_filename, 'wb'))
         print 'Done Saving Model to Disk'
-    return rf_clf
+    predictionScores(rf_clf, X_test, Y_test)
 
-def trainSVM(X_train, Y_train, model_name, cache=False, one_vs_rest=True):
+def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_rest=True):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
     print 'Training SVM -SVM Model Filename =', rf_filename
@@ -64,7 +64,8 @@ def trainSVM(X_train, Y_train, model_name, cache=False, one_vs_rest=True):
         print 'Saving Model to Disk'
         pickle.dump(svm_clf, open(rf_filename, 'wb'))
         print 'Done Saving Model to Disk'
-    return svm_clf
+    predictionScores(svm_clf, X_test, Y_test)
+
 
 
 
@@ -126,12 +127,9 @@ def rfOnActivationsPerformance(model_name, data):
     X_train, Y_train, X_test, Y_test= prepXY(data, model_name)
     for i in range(10):
         print 'RF Trial', i
-        rf_cl = trainRF(X_train, Y_train, model_name)
-        predictionScores(rf_cl, X_test, Y_test)
-    svm_clf = trainSVM(X_train, Y_train, model_name, one_vs_rest=True)
-    predictionScores(svm_clf, X_test, Y_test)
-    svm_clf2 = trainSVM(X_train, Y_train, model_name, one_vs_rest=False)
-    predictionScores(svm_clf2, X_test, Y_test)
+        trainRF(X_train, Y_train, X_test, Y_test, model_name)
+    trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=True)
+    trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=False)
     #predictionScores(rf_cl, X_train, Y_train)    0.99
     
 if __name__ == '__main__':
