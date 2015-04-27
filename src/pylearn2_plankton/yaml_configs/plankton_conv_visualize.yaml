@@ -61,9 +61,11 @@
             {
                 'valid' : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
                               which_set: 'valid',
+                              maxPixel: 28
                           }
                 , 'test'  : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
-                              which_set: 'test'
+                              which_set: 'test',
+                              maxPixel: 28
                           }
             },
         cost: !obj:pylearn2.costs.cost.SumOfCosts { costs: [
