@@ -117,7 +117,7 @@
     extensions:
         [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: 'model_files/plankton_model2.pkl'
+             save_path: 'model_files/plankton_model2r.pkl'
         }, 
         !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
             start: 1,
