@@ -93,10 +93,10 @@ def predictionScores(cl, X_test, Y_test):
 
 def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print '\n-----#####-----#####-----#####-----#####-----#####-----#####'
-    print 'Performing Tests using Activations on other classifiers'
-    print 'pklname', model_name
+    print 'Performing Tests using Raw Input on other classifiers'
+    #print 'pklname', model_name
     print 'data_spec', data_spec
-    print 'which_layer', which_layer
+    #print 'which_layer', which_layer
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
     X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
