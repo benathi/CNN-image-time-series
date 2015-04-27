@@ -45,7 +45,7 @@ def trainRF(X_train, Y_train, model_name, cache=False, n_estimators=300):
         print 'Done Saving Model to Disk'
     return rf_clf
 
-def trainSVM_one_one(X_train, Y_train, model_name, cache=False, one_vs_rest=True):
+def trainSVM(X_train, Y_train, model_name, cache=False, one_vs_rest=True):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
     print 'Training SVM -SVM Model Filename =', rf_filename
@@ -54,8 +54,10 @@ def trainSVM_one_one(X_train, Y_train, model_name, cache=False, one_vs_rest=True
             print 'Model Exists - Loading from disk'
             return pickle.load(open(rf_filename,'rb'))
     if one_vs_rest:
+        print 'One Versus Rest SVM'
         svm_clf = svm.LinearSVC()       # one versus rest
     else:
+        print 'One Versus One SVM'
         svm_clf = svm.SVC()             # one versus one
     svm_clf.fit(X_train, Y_train)   
     if cache:
@@ -124,8 +126,10 @@ def rfOnActivationsPerformance(model_name, data):
     X_train, Y_train, X_test, Y_test= prepXY(data, model_name)
     rf_cl = trainRF(X_train, Y_train, model_name)
     predictionScores(rf_cl, X_test, Y_test)
-    svm_clf = trainSVM_one_one(X_train, Y_train, model_name, one_vs_rest=True)
+    svm_clf = trainSVM(X_train, Y_train, model_name, one_vs_rest=True)
     predictionScores(svm_clf, X_test, Y_test)
+    svm_clf2 = trainSVM(X_train, Y_train, model_name, one_vs_rest=False)
+    predictionScores(svm_clf2, X_test, Y_test)
     #predictionScores(rf_cl, X_train, Y_train)    0.99
     
 if __name__ == '__main__':
