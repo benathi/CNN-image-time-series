@@ -26,9 +26,8 @@ import convertImage
 #for i in  list(set(glob.glob(os.path.join('/Users/ben/Kaggle/Plankton/Data',"train", "*")))):
 #    print i
 
-def dumpPlanktonData():
+def dumpPlanktonData(maxPixel=40):
     print 'Loading Plankton Data'
-    maxPixel = 40
     imageSize = maxPixel*maxPixel
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
     dataPath = '../../data/plankton'
@@ -219,7 +218,11 @@ def generateSubmissionFile(probMatrix, classDict, Y_info):
     
 
 def main():
-    dumpPlanktonData()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-maxpixel', action="store", default=40, type=int)
+    allArgs = parser.parse_args()
+    dumpPlanktonData(allArgs.maxpixel)
     pass
 
 if __name__ == "__main__":
