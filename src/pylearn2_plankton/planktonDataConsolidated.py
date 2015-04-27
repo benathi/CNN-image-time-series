@@ -73,9 +73,9 @@ class PlanktonData(DenseDesignMatrix):
                 stop = 25000
             elif which_set == 'valid':
                 start = 25000
-                stop = 27000
+                stop = 26500
             elif which_set == 'test':
-                start = 27000
+                start = 26500
                 stop = X.shape[0]
         else:
             # rotate
