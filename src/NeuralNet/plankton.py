@@ -26,7 +26,7 @@ import convertImage
 #for i in  list(set(glob.glob(os.path.join('/Users/ben/Kaggle/Plankton/Data',"train", "*")))):
 #    print i
 
-def dumpPlanktonData(maxPixel=40):
+def dumpPlanktonData(maxPixel=40, cache=False):
     print 'Loading Plankton Data'
     imageSize = maxPixel*maxPixel
     current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -74,6 +74,7 @@ def dumpPlanktonData(maxPixel=40):
     Y_info = np.array(Y_info)
     print 'Done Loading Plankton Data'
     print 'Start Shuffling'
+    np.random.seed(15430967)
     randPermutation = np.random.permutation(m)
     Y_info = Y_info[randPermutation]
     X = X[randPermutation]
@@ -84,9 +85,11 @@ def dumpPlanktonData(maxPixel=40):
     Y_info is a dictionary mapping index to input information: filename, classIndex, className
     labelMapText maps a class index to class name (text)
     '''
-    pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain' + str(maxPixel) +'.p'), 'wb'))
-    print 'Done dumping to pickle file'
-
+    if cache:
+        pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain' + str(maxPixel) +'.p'), 'wb'))
+        print 'Done dumping to pickle file'
+    else:
+        return (X,Y,Y_info, labelMapText)
 
 
 def loadDataSplitted_LeNetFormat():

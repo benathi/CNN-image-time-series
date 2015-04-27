@@ -30,7 +30,10 @@ class PlanktonData(DenseDesignMatrix):
                 pickle.load( open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrain.p'), 'rb'))
             elif maxPixel == 40:
                 X , Y, _, classDict =  \
-                pickle.load( open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrain40.p'), 'rb'))  
+                pickle.load( open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrain40.p'), 'rb'))
+            elif maxPixel == 95:
+                X, Y, _, classDict = dumpPlanktonData(maxPixel=95, cache=False)
+                 
             # 1. Set class names
             numClasses = 121
             classNames = []
@@ -53,6 +56,8 @@ class PlanktonData(DenseDesignMatrix):
             elif maxPixel == 40:
                 X , Y, _, classDict =  \
                 pickle.load( open(os.path.join(os.environ['PYLEARN2_DATA_PATH'] ,'planktonTrain40.p'), 'rb'))
+            elif maxPixel == 95:
+                X, Y, _, classDict = dumpPlanktonData(maxPixel=95, cache=False)
             # 1. Set class names
             numClasses = 121
             classNames = []
@@ -122,6 +127,73 @@ def generateRotatedData(X,Y, maxPixel=28, num_rotations=12):
     Yr = Yr[randPermutation]
     return Xr, Yr
 
+def dumpPlanktonData(maxPixel=40, cache=False):
+    import re, glob
+    from skimage.io import imread
+    from skimage.transform import resize
+    print 'Loading Plankton Data'
+    imageSize = maxPixel*maxPixel
+    current_folder_path = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    dataPath = '../../data/plankton'
+    directory_names = list(set(glob.glob(os.path.join(dataPath,"train", "*")))\
+                           .difference(set(glob.glob(os.path.join(dataPath,"train","*.*")))))
+    m = 0
+    numClasses = 0
+    for directory in directory_names:
+        numClasses += 1
+        for filename in glob.glob(os.path.join(directory, '*.jpg')):
+            if filename[-4:] != ".jpg":
+                continue
+            m += 1
+    print 'Number of Inputs = %d. Number of Classes = %d' % (m, numClasses)
+    
+    numFeatures = imageSize + 2 # +2 for width and height
+    X = np.empty((m, numFeatures))
+    Y_info = []
+    labelMapText = {}
+    Y = np.empty((m))
+    i = -1
+    classIndex = -1
+    for directory in directory_names:
+        classIndex += 1
+        numInstancesPerClass = 0
+        className = re.match(r'.*/(.*)', directory).group(1)
+        print 'Class #%d\t: %s' %(classIndex, className)
+        for filename in glob.glob(os.path.join(directory, '*.jpg')):
+            if filename[-4:] != ".jpg":
+                continue
+            i += 1
+            numInstancesPerClass += 1
+            image = imread(filename, as_grey=True)
+            ## Record image size here (28 by 28)
+            #X[i,imageSize] = np.shape(image)[0]
+            #X[i,imageSize+1] = np.shape(image)[1]
+            #image = convertImage.process(image)
+            image = resize(image, (maxPixel, maxPixel))
+            X[i,0:imageSize] = np.reshape(image, (1,imageSize))
+            Y[i] = classIndex
+            shortFileName = re.match(r'.*/(.*)', filename).group(1)
+            Y_info.append( (shortFileName, classIndex, className) )
+        labelMapText[classIndex] = (className, numInstancesPerClass)
+    Y_info = np.array(Y_info)
+    print 'Done Loading Plankton Data'
+    print 'Start Shuffling'
+    np.random.seed(15430967)
+    randPermutation = np.random.permutation(m)
+    Y_info = Y_info[randPermutation]
+    X = X[randPermutation]
+    Y = Y[randPermutation]
+    print 'Dumping Data to Pickle File'
+    ''' 
+    Y is a label in number
+    Y_info is a dictionary mapping index to input information: filename, classIndex, className
+    labelMapText maps a class index to class name (text)
+    '''
+    if cache:
+        pickle.dump( (X, Y, Y_info, labelMapText ), open(os.path.join(current_folder_path, '../../data/planktonTrain' + str(maxPixel) +'.p'), 'wb'))
+        print 'Done dumping to pickle file'
+    else:
+        return (X,Y,Y_info, labelMapText)
 
 if __name__=='__main__':
     ds = PlanktonData('report')
