@@ -75,30 +75,19 @@ def findActivations(model_name, listX_raw, which_layer, maxPixel):
         for batchIndex in range(m/batch_size):
             _input = np.array(X[batchIndex*batch_size:(batchIndex+1)*batch_size],
                     dtype=theano.config.floatX)
-        fprop_results = model.fprop(theano.shared(_input,
+            fprop_results = model.fprop(theano.shared(_input,
                             name='XReport'), return_all=True)[which_layer].eval()
-        '''
-        f1 = fprop_results[0].eval()
-        print 'f1=', f1.shape
-        f2 = fprop_results[1].eval()
-        print 'f2=', f2.shape
-        f3 = fprop_results[2].eval()
-        print 'f3=', f3.shape
-        '''
-        print "shape of fprop_results = ", fprop_results.shape
-        #print 'shape of fprop', fprop_results.shape
-        print 'Returning - DEBUG'             
-        return 
-        if activation is None:
-            activation = fprop_results
-        else:
-            activation = np.concatenate((activation, fprop_results), axis=0)
-        print 'Breaking for debug!!!!'
-        break 
-            
-        
+            if batchIndex==0:
+                print 'fprop_results shape', fprop_results.shape
+            if activation is None:
+                activation = fprop_results
+            else:
+                activation = np.concatenate((activation, fprop_results), axis=0)
+        # need to flatten to be (num points, num features)
+        print 'Activation shape before reshape', activation.shape
+        activation = np.reshape(activation, (m,-1))
+        print 'After reshape', activation.shape
         activation_list.append(activation)
-    
     return activation_list
 
 '''
@@ -162,7 +151,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-layer', action="store", default=2, type=int)
     #parser.add_argument('-yaml', action="store", default='plankton_conv_visualize_model.yaml')
-    parser.add_argument('-pklname', action="store", default='model_files/plankton_conv_visualize_model.pkl')
+    parser.add_argument('-pklname', action="store", default='model_files/plankton_conv_visualize_model_CPU.pkl')
     parser.add_argument('-data', action="store", default='pylearn2_plankton.planktonDataConsolidated')
     parser.add_argument('-maxpix', action="store", default=28, type=int)
     allArgs = parser.parse_args()
