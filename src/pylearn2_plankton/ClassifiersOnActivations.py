@@ -11,7 +11,7 @@ from sklearn import svm
 '''
 Note: format of Y_train is 
 '''
-def trainRF(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimators=500):
+def trainRF(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimators=400):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
     print 'Training RF - RF Model Filename =', rf_filename
