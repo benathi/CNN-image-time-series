@@ -13,8 +13,8 @@ from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
 
 
-def treeImportance(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimators=400):
-    #rf_filename = model_name.split('.')[0] + str('RFmodel.p')
+def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, cache=False, n_estimators=400):
+    rf_filename = model_name.split('.')[0] + 'layer' + str(which_layer) + '.png'
     print 'CNN model name', model_name
     #print 'Training RF - RF Model Filename =', rf_filename
     forest = ExtraTreesClassifier(n_estimators=250,
@@ -28,17 +28,18 @@ def treeImportance(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_
     # Print the feature ranking
     print("Feature ranking:")
     
-    for f in range(10):
+    for f in range(64):
         print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
     
     # Plot the feature importances of the forest
     plt.figure()
     plt.title("Feature importances")
-    plt.bar(range(10), importances[indices],
+    plt.bar(range(64), importances[indices],
            color="r", yerr=std[indices], align="center")
-    plt.xticks(range(10), indices)
-    plt.xlim([-1, 10])
-    plt.show()
+    plt.xticks(range(64), indices)
+    plt.xlim([-1, 64])
+    plt.savefig(rf_filename)
+    #plt.show()
 """
 def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_rest=True):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
@@ -147,7 +148,7 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
     X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
-    treeImportance(X_train, Y_train, X_test, Y_test, model_name)
+    treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer)
     
     
 if __name__ == '__main__':
