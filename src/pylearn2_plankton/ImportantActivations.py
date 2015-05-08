@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
-
+import sklearn.feature_selection
 
 def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, cache=False, n_estimators=400):
     rf_filename = model_name.split('.')[0] + 'layer' + str(which_layer) + '.png'
@@ -28,10 +28,16 @@ def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, ca
     # Print the feature ranking
     print("Feature ranking:")
     
-    for f in range(64):
+    for f in range(X_train.shape[1]):
         print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
     
+    print '\n Feature Importance Using Univariate Selection'
+    results = sklearn.feature_selection.univariate_selection.f_regression(X_train, Y_train, center=False)
+    F_values, p_values =  results
+    for f,p in zip(F_values, p_values):
+        print 'f=%f. p=%f' % (f, p)
     # Plot the feature importances of the forest
+    '''
     plt.figure()
     plt.title("Feature importances")
     plt.bar(range(64), importances[indices],
@@ -39,7 +45,8 @@ def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, ca
     plt.xticks(range(64), indices)
     plt.xlim([-1, 64])
     plt.savefig(rf_filename)
-    #plt.show()
+    plt.show()
+    '''
 """
 def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_rest=True):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
