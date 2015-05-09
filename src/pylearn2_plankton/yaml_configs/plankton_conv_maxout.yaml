@@ -1,8 +1,7 @@
 !obj:pylearn2.train.Train {
-    dataset: &train !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
+    dataset: &train !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData {
         which_set: 'train',
-        start: 0,
-        stop: 20000
+        maxPixel: 28
     },
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 100,
@@ -59,15 +58,13 @@
         },
         monitoring_dataset:
             {
-                'valid' : !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
-                              which_set: 'train',
-                              start: 20000,
-                              stop:  25000
+                'valid' : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
+                              which_set: 'valid',
+                              maxPixel: 28
                           },
-                'test'  : !obj:pylearn2_plankton.planktonDataPylearn2.PlanktonData {
-                              which_set: 'train',
-                              start: 25000,
-                              stop:  30000
+                'test'  : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
+                              which_set: 'test',
+                              maxPixel: 28
                           }
             },
         cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
