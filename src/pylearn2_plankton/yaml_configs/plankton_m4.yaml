@@ -1,4 +1,3 @@
-# using dropout and maxout
 !obj:pylearn2.train.Train {
     dataset: &train !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData {
         which_set: 'train',
@@ -10,53 +9,56 @@
             shape: [28, 28],
             num_channels: 1
         },
-        layers: [ !obj:pylearn2.models.maxout.MaxoutConvC01B {
-                     layer_name: 'c0',
-                     num_pieces: 2,
+        layers: [
+                 !obj:pylearn2.models.maxout.MaxoutConvC01B {
+                     layer_name: 'h0',
+                     pad: 0,
                      num_channels: 32,
-                     irange: .05,
-                     kernel_shape: [5, 5],
-                     pool_shape: [2, 2],
-                     pool_stride: [2, 2],
-                     max_kernel_norm: 1.9365
-                 }, !obj:pylearn2.models.maxout.MaxoutConvC01B {
-                     layer_name: 'c1',
                      num_pieces: 2,
+                     kernel_shape: [8, 8],
+                     pool_shape: [4, 4],
+                     pool_stride: [2, 2],
+                     irange: .005,
+                     max_kernel_norm: .9,
+                 },
+                 !obj:pylearn2.models.maxout.MaxoutConvC01B {
+                     layer_name: 'h1',
+                     pad: 3,
                      num_channels: 48,
-                     irange: .05,
+                     num_pieces: 2,
+                     kernel_shape: [8, 8],
+                     pool_shape: [4, 4],
+                     pool_stride: [2, 2],
+                     irange: .005,
+                     max_kernel_norm: 1.9365,
+                 },
+                 !obj:pylearn2.models.maxout.MaxoutConvC01B {
+                     pad: 3,
+                     layer_name: 'h2',
+                     num_channels: 64,
+                     num_pieces: 4,
                      kernel_shape: [5, 5],
                      pool_shape: [2, 2],
                      pool_stride: [2, 2],
-                     max_kernel_norm: 1.9365
-                 }
-                 , !obj:pylearn2.models.maxout.MaxoutConvC01B {
-                     layer_name: 'c2',
-                     num_pieces: 4,
-                     num_channels: 64,
-                     irange: .05,
-                     kernel_shape: [3, 3],
-                     pool_shape: [2, 2],
-                     pool_stride: [2, 2],
-                     max_kernel_norm: 1.9365
-                 }
-                 , !obj:pylearn2.models.maxout.Maxout {
+                     irange: .005,
+                     max_kernel_norm: 1.9365,
+                 },
+                 !obj:pylearn2.models.mlp.RectifiedLinear {
                      layer_name: 'f0',
-                     num_units: 121,
-                     num_pieces: 2,
+                     dim: 121,
                      irange: .05,
                      max_col_norm: 1.9365,
-                 }
-                 , !obj:pylearn2.models.mlp.Softmax {
+                 },
+                 !obj:pylearn2.models.mlp.Softmax {
                      max_col_norm: 1.9365,
                      layer_name: 'y',
                      n_classes: 121,
-                     istdev: .05
+                     irange: .005
                  }
                 ],
     },
     algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
-        batch_size: 100,
-        learning_rate: .01,
+        learning_rate: .05,
         learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
             init_momentum: .5
         },
@@ -72,13 +74,13 @@
                           }
             },
         cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
-            input_include_probs: { 'c0' : 1. },
-            input_scales: { 'c0': 1. }
+            input_include_probs: { 'h0' : .8 },
+            input_scales: { 'h0': 1. }
         },
         termination_criterion: !obj:pylearn2.termination_criteria.MonitorBased {
             channel_name: "valid_y_misclass",
             prop_decrease: 0.,
-            N: 100
+            N: 200
         },
         update_callbacks: !obj:pylearn2.training_algorithms.sgd.ExponentialDecay {
             decay_factor: 1.00004,
@@ -88,19 +90,12 @@
     extensions:
         [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
              channel_name: 'valid_y_misclass',
-             save_path: "model_files/plankton_model0m.pkl"
-        }, 
-        !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+             save_path: "./plankton_m4.pkl"
+        }, !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
             start: 1,
-            saturate: 10,
-            final_momentum: .99
+            saturate: 250,
+            final_momentum: .7
         }
-        #,
-        #!obj:pylearn2.training_algorithms.sgd.LinearDecayOverEpoch {
-        #    start: 1,
-        #    saturate: 500,
-        #    decay_factor: .01
-        #}
     ]
 }
 
