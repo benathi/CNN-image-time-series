@@ -17,8 +17,7 @@ def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, ca
     rf_filename = model_name.split('.')[0] + 'layer' + str(which_layer) + '.png'
     print 'CNN model name', model_name
     #print 'Training RF - RF Model Filename =', rf_filename
-    forest = ExtraTreesClassifier(n_estimators=250,
-                              random_state=0)
+    forest = RandomForestClassifier(n_estimators=400)
     forest.fit(X_train, Y_train)
     importances = forest.feature_importances_
     std = np.std([tree.feature_importances_ for tree in forest.estimators_],
@@ -31,11 +30,20 @@ def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, ca
     for f in range(X_train.shape[1]):
         print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
     
+    print 'Total number of features', len(indices)
+    thres = 1/(100.*len(indices))
+    print 'Threshold = ', thres
+    print 'Number of features with importance > threshold', np.sum(importances > thres)
+    
+    
+    
+    """
     print '\n Feature Importance Using Univariate Selection'
     results = sklearn.feature_selection.univariate_selection.f_regression(X_train, Y_train, center=False)
     F_values, p_values =  results
     for f,p in zip(F_values, p_values):
         print 'f=%e. p=%e' % (f, p)
+    """
     # Plot the feature importances of the forest
     '''
     plt.figure()
@@ -217,11 +225,14 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'Finding Importance of Activations as Features for Random Forests'
     print 'pklname', model_name
     print 'data_spec', data_spec
-    print 'which_layer', which_layer
+    print 'which_layer (max layer)', which_layer
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
     X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
-    treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer)
+    for layer in range(which_layer):
+        print '**************************************************************'
+        print 'layer =', layer
+        treeImportance(X_train, Y_train, X_test, Y_test, model_name, layer)
     
     
 if __name__ == '__main__':
