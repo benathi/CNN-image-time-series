@@ -180,7 +180,7 @@ def plotFeatures(featuresDict, which_layer=2, savePlots=True):
             ggsave(_plot, filename, width=16, height=6)
         
     
-def main(model_name="plankton_conv_visualize_model.pkl.params",
+def main(model_name="plankton_model0.pkl.params",
          rotate=False, bScalar=True, 
          which_layer=2, numSamples='All'):
     import plankton_vis1
@@ -190,7 +190,7 @@ def main(model_name="plankton_conv_visualize_model.pkl.params",
                                   allFeats=False, bScalar=True)
     y_labels = plankton_utils.getY_label_int(which_data='train')
     activation_dict = separateActivationsByClass(activations, y_labels)
-    #calculateAverageActivations(activation_dict, which_layer)
+    calculateAverageActivations(activation_dict, which_layer)
     plotFeatures(activation_dict, which_layer)
     
 

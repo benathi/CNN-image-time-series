@@ -66,7 +66,7 @@ def calculateInvarianceScores(samples, indices, model_name, which_layer, numRota
                                                               numRotations)
     print 'shape of samples before findActivations', samples.shape
     activations = findActivations(model_name, rotatedSamples,
-                    which_layer=2, allFeats=True, cache=False)
+                    which_layer=which_layer, allFeats=True, cache=False)
     print 'shape of activations', activations.shape
     ''' output a dictionary '''
     dictSampleRotation = {}
@@ -109,7 +109,7 @@ def plotRinvariance(scoresDict, which_layer=2, savePlots=True):
     plot = (ggplot(aes(x='x', y='y', color='sample'), df) +
     xlab('Feature') + ylab('Rotationally Invariant Scores')
     + ggtitle('Rotationally Invariance Scores of Features')
-    #+ geom_line(alpha=0.5) 
+    + geom_line(alpha=0.5) 
     + geom_point(alpha=0.5))
     
     print plot
@@ -125,6 +125,7 @@ def plotRinvariance(scoresDict, which_layer=2, savePlots=True):
 
 
 def plotInvarianceScores_main(model_name, which_layer=2):
+    print 'Plotting Invaraint Scores for Layer', which_layer
     indices = [0,3,6,16]
     chosen_samples = choose_samples(indices)
     rInvarianceScores = calculateInvarianceScores(chosen_samples, indices,
