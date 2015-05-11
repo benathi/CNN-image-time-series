@@ -1,0 +1,106 @@
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData {
+        which_set: 'train',
+        maxPixel: 28
+    },
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 100,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [28, 28],
+            num_channels: 1
+        },
+        layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c0',
+                     output_channels: 32,
+                     irange: .05,
+                     kernel_shape: [5, 5],
+                     pool_shape: [2, 2],
+                     pool_stride: [2, 2],
+                     max_kernel_norm: 1.9365
+                 }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c1',
+                     output_channels: 48,
+                     irange: .05,
+                     kernel_shape: [5, 5],
+                     pool_shape: [2, 2],
+                     pool_stride: [2, 2],
+                     max_kernel_norm: 1.9365
+                 }
+                 , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c2',
+                     output_channels: 64,
+                     irange: .05,
+                     kernel_shape: [3, 3],
+                     pool_shape: [2, 2],
+                     pool_stride: [2, 2],
+                     max_kernel_norm: 1.9365
+                 }
+                 , !obj:pylearn2.models.mlp.RectifiedLinear {
+                     layer_name: 'f0',
+                     dim: 121,
+                     irange: .05,
+                     max_col_norm: 1.9365,
+                 }
+                 , !obj:pylearn2.models.mlp.Softmax {
+                     max_col_norm: 1.9365,
+                     layer_name: 'y',
+                     n_classes: 121,
+                     istdev: .05
+                 }
+                 # add fully connected layer before Softmax? 
+                 # Example: Sigmoid, RectifiedLinear, Maxout, tanh, Linear
+                ],
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        batch_size: 100,
+        learning_rate: .01,
+        learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
+            init_momentum: .5
+        },
+        monitoring_dataset:
+            {
+                'valid' : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
+                              which_set: 'valid',
+                              maxPixel: 28
+                          }
+                , 'test'  : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
+                              which_set: 'test',
+                              maxPixel: 28
+                          }
+            },
+        cost: !obj:pylearn2.costs.cost.SumOfCosts { costs: [
+            !obj:pylearn2.costs.cost.MethodCost {
+                method: 'cost_from_X'
+            }, !obj:pylearn2.costs.mlp.WeightDecay {
+                coeffs: [ .00005, .00005, .00005 , 0.005, 0.005] 
+                #the length must agree with number of layers
+            }
+            ]
+        },
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                !obj:pylearn2.termination_criteria.MonitorBased {
+                    channel_name: "valid_y_misclass",
+                    prop_decrease: 0.00,
+                    N: 10
+                },
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 100
+                },
+            ]
+        },
+    },
+    extensions:
+        [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_y_misclass',
+             save_path: "model_files/plankton_model0_bag8.pkl"
+        }, 
+        !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+            start: 1,
+            saturate: 10,
+            final_momentum: .99
+        }
+    ]
+}
+
+
