@@ -235,7 +235,7 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
         X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, layer, maxPixel)
         print 'layer =', layer
         treeImportance(X_train, Y_train, X_test, Y_test, model_name, layer)
-        break
+        
     
     
 if __name__ == '__main__':
