@@ -31,6 +31,25 @@ def trainRF(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimat
         pickle.dump(rf_clf, open(rf_filename, 'wb'))
         print 'Done Saving Model to Disk'
     predictionScores(rf_clf, X_test, Y_test)
+    
+    ''' Add Feature Importance '''
+    importances = rf_clf.feature_importances_
+    std = np.std([tree.feature_importances_ for tree in rf_clf.estimators_],
+                 axis=0)
+    indices = np.argsort(importances)[::-1]
+    
+    # Print the feature ranking
+    print("Feature ranking:")
+    
+    if False:
+        for f in range(X_train.shape[1]):
+            print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
+    
+    print 'Total number of features', len(indices)
+    thres = 1/(100.*len(indices))
+    print 'Threshold = ', thres
+    print 'Number of features with importance > threshold', np.sum(importances > thres)
+    
 
 def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_rest=True):
     rf_filename = model_name.split('.')[0] + str('RFmodel.p')
@@ -138,13 +157,15 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'which_layer', which_layer
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
-    X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
-    print 'Running Random Forests'
-    for i in range(1):
-        print '\tRF Trial', i
-        trainRF(X_train, Y_train, X_test, Y_test, model_name)
-    trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=True)
-    trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=False)
+    ''' Note : using which_layer as the maximum layer instead '''
+    for which_layer in range(which_layer):
+        X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
+        print 'Running Random Forests'
+        for i in range(1):
+            print '\tRF Trial', i
+            trainRF(X_train, Y_train, X_test, Y_test, model_name)
+        trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=True)
+        trainSVM(X_train, Y_train, X_test, Y_test, model_name, one_vs_rest=False)
     
 if __name__ == '__main__':
     import argparse
