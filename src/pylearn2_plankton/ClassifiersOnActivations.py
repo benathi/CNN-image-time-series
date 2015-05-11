@@ -158,8 +158,10 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
     ''' Note : using which_layer as the maximum layer instead '''
-    for which_layer in range(which_layer):
-        X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, which_layer, maxPixel)
+    for layer in range(which_layer):
+        print '\nSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS'
+        print 'Current Layer (from 0)', layer
+        X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, layer, maxPixel)
         print 'Running Random Forests'
         for i in range(1):
             print '\tRF Trial', i
