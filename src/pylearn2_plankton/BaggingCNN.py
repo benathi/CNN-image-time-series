@@ -64,7 +64,7 @@ def prepXY(model_name, data_spec, which_layer, maxPixel, rawX_test):
     # combine CV to test
     #rawX_train = np.concatenate((rawX_train, rawX_cv), axis=0)
     #Y_train = np.concatenate((Y_train, Y_cv), axis=0)
-    X_test = findActivations(model_name, [rawX_test], which_layer, maxPixel)
+    X_test = findActivations(model_name, [rawX_test], which_layer, maxPixel)[0]
     # 2. find activations
     print 'Done Finding Activations'
     return X_test
