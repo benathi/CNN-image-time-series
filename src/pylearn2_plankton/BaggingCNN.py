@@ -56,18 +56,18 @@ def getRawData(data_spec, which_set, maxPixel):
 Return both X (activations) and Y
 Note: configured for 28 x 28 and 3 layer model for now
 '''
-def prepXY(model_name, data_spec, which_layer, maxPixel):
+def prepXY(model_name, data_spec, which_layer, maxPixel, rawX_test):
     # 1. get data
     #rawX_train, Y_train = getRawData(data_spec, 'train', maxPixel)
     #rawX_cv, Y_cv = getRawData(data_spec, 'valid', maxPixel)
-    rawX_test, Y_test = getRawData(data_spec, 'test', maxPixel)
+    
     # combine CV to test
     #rawX_train = np.concatenate((rawX_train, rawX_cv), axis=0)
     #Y_train = np.concatenate((Y_train, Y_cv), axis=0)
     X_test = findActivations(model_name, [rawX_test], which_layer, maxPixel)[0]
     # 2. find activations
     print 'Done Finding Activations'
-    return (X_test, Y_test)
+    return X_test
 
 '''
 rf_cl:     random forest classifier as a function
@@ -77,31 +77,33 @@ Y_test:    Does it work for one-hot?
 def predictionScores(cl, X_test, Y_test):
     print 'Accuracy Score = ', cl.score(X_test, Y_test)
 
-def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
+def rfOnActivationsPerformance(model_name, data_spec, num_models, maxPixel):
     print '\n-----#####-----#####-----#####-----#####-----#####-----#####'
     print 'Bagging on CNN'
     print 'pklname', model_name
     print 'data_spec', data_spec
-    print 'which_layer', which_layer
+    print 'num_modesl', num_models
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
+    rawX_test, Y_test = getRawData(data_spec, 'test', maxPixel)
     X_test_acc = None
-    for i in range(5):
+    for i in range(num_models):
         model_name_bag = model_name + '_bag'+ str(i) + '.pkl'
-        X_test, Y_test= prepXY(model_name_bag, data_spec, -1, maxPixel)
-        print 'shape of X_test', X_test.shape
+        X_test= prepXY(model_name_bag, data_spec, -1, maxPixel, rawX_test)
         if X_test_acc is None:
             X_test_acc = X_test
         else:
             X_test_acc += X_test
-    print 'shaepe of X_test acc', X_test_acc.shape
-    Y_predicted = np.argmax(X_test_acc, axis=1)
-    print 'prediction score', np.sum(Y_test == Y_predicted)/(1.*len(Y_test))
+        print '# of models', (i+1)
+        Y_predicted = np.argmax(X_test_acc, axis=1)
+        print 'prediction score', np.sum(Y_test == Y_predicted)/(1.*len(Y_test))
+        print ''
+
     
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-layer', action="store", default=2, type=int)
+    parser.add_argument('-num_models', action="store", default=5, type=int)
     #parser.add_argument('-yaml', action="store", default='plankton_conv_visualize_model.yaml')
     parser.add_argument('-pklname', action="store", default='model_files/plankton_conv_visualize_model_CPU.pkl')
     parser.add_argument('-data', action="store", default='pylearn2_plankton.planktonDataConsolidated')
@@ -109,5 +111,5 @@ if __name__ == '__main__':
     allArgs = parser.parse_args()
     rfOnActivationsPerformance(model_name=allArgs.pklname,
                                data_spec=allArgs.data,
-                               which_layer=allArgs.layer,
+                               num_models=allArgs.num_models,
                                maxPixel=allArgs.maxpix)
