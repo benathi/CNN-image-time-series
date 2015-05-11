@@ -93,7 +93,7 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
             X_test_acc = X_test
         else:
             X_test_acc += X_test
-    
+    print 'shaepe of X_test acc', X_test_acc.shape
     Y_predicted = np.argmax(X_test_acc, axis=1)
     print 'prediction score', np.sum(Y_test == Y_predicted)/(1.*len(Y_test))
     
