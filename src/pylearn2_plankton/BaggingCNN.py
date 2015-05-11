@@ -85,8 +85,16 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'which_layer', which_layer
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
-    X_test, Y_test= prepXY(model_name, data_spec, -1, maxPixel)
-    Y_predicted = np.argmax(X_test, axis=1)
+    X_test_acc = None
+    for i in range(5):
+        model_name_bag = model_name + '_bag'+ str(i) + '.pkl'
+        X_test, Y_test= prepXY(model_name, data_spec, -1, maxPixel)
+        if X_test_acc is None:
+            X_test_acc = X_test
+        else:
+            X_test_acc += X_test
+    
+    Y_predicted = np.argmax(X_test_acc, axis=1)
     print 'prediction score', np.sum(Y_test == Y_predicted)/(1.*len(Y_test))
     
 if __name__ == '__main__':
