@@ -58,16 +58,16 @@ Note: configured for 28 x 28 and 3 layer model for now
 '''
 def prepXY(model_name, data_spec, which_layer, maxPixel):
     # 1. get data
-    rawX_train, Y_train = getRawData(data_spec, 'train', maxPixel)
-    rawX_cv, Y_cv = getRawData(data_spec, 'valid', maxPixel)
+    #rawX_train, Y_train = getRawData(data_spec, 'train', maxPixel)
+    #rawX_cv, Y_cv = getRawData(data_spec, 'valid', maxPixel)
     rawX_test, Y_test = getRawData(data_spec, 'test', maxPixel)
     # combine CV to test
-    rawX_train = np.concatenate((rawX_train, rawX_cv), axis=0)
-    Y_train = np.concatenate((Y_train, Y_cv), axis=0)
-    X_train, X_test = findActivations(model_name, [rawX_train, rawX_test], which_layer, maxPixel)
+    #rawX_train = np.concatenate((rawX_train, rawX_cv), axis=0)
+    #Y_train = np.concatenate((Y_train, Y_cv), axis=0)
+    X_test = findActivations(model_name, [rawX_test], which_layer, maxPixel)
     # 2. find activations
     print 'Done Finding Activations'
-    return (X_train, Y_train, X_test, Y_test)
+    return (X_test, Y_test)
 
 '''
 rf_cl:     random forest classifier as a function
@@ -88,7 +88,7 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     X_test_acc = None
     for i in range(5):
         model_name_bag = model_name + '_bag'+ str(i) + '.pkl'
-        X_test, Y_test= prepXY(model_name, data_spec, -1, maxPixel)
+        X_test, Y_test= prepXY(model_name_bag, data_spec, -1, maxPixel)
         if X_test_acc is None:
             X_test_acc = X_test
         else:
