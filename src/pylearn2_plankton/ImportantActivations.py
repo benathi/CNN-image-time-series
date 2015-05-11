@@ -228,7 +228,7 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     print 'which_layer (max layer)', which_layer
     print 'maxPixel', maxPixel
     print 'Obtaining Activations'
-    
+    which_layer = [4]
     for layer in range(which_layer):
         print '**************************************************************'
         X_train, Y_train, X_test, Y_test= prepXY(model_name, data_spec, layer, maxPixel)
