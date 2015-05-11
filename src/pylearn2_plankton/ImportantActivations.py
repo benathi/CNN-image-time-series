@@ -13,7 +13,7 @@ from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
 import sklearn.feature_selection
 
-def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, cache=False, n_estimators=400):
+def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, cache=False, n_estimators=400, verbose=False):
     rf_filename = model_name.split('.')[0] + 'layer' + str(which_layer) + '.png'
     print 'CNN model name', model_name
     #print 'Training RF - RF Model Filename =', rf_filename
@@ -27,8 +27,9 @@ def treeImportance(X_train, Y_train, X_test, Y_test, model_name, which_layer, ca
     # Print the feature ranking
     print("Feature ranking:")
     
-    for f in range(X_train.shape[1]):
-        print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
+    if verbose:
+        for f in range(X_train.shape[1]):
+            print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
     
     print 'Total number of features', len(indices)
     thres = 1/(100.*len(indices))
