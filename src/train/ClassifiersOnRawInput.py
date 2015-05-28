@@ -61,8 +61,8 @@ def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_r
 
 def getRawData(data_spec, which_set, maxPixel):
     print 'Loading Raw Data set', which_set
-    #PC = __import__('pylearn2_plankton.planktonDataConsolidated', fromlist=['planktonDataConsolidated'])
-    PC = __import__('pylearn2_plankton.planktonDataConsolidated', fromlist=[data_spec.split('.')[1]])
+    #PC = __import__('train.planktonDataConsolidated', fromlist=['planktonDataConsolidated'])
+    PC = __import__('train.planktonDataConsolidated', fromlist=[data_spec.split('.')[1]])
     ds = PC.PlanktonData(which_set, maxPixel)
     designMatrix = ds.get_data()[0] # index 1 is the label
     Y = ds.get_data()[1]
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('-layer', action="store", default=2, type=int)
     #parser.add_argument('-yaml', action="store", default='plankton_conv_visualize_model.yaml')
     parser.add_argument('-pklname', action="store", default='model_files/plankton_conv_visualize_model_CPU.pkl')
-    parser.add_argument('-data', action="store", default='pylearn2_plankton.planktonDataConsolidated')
+    parser.add_argument('-data', action="store", default='train.planktonDataConsolidated')
     parser.add_argument('-maxpix', action="store", default=28, type=int)
     allArgs = parser.parse_args()
     rfOnActivationsPerformance(model_name=allArgs.pklname,
