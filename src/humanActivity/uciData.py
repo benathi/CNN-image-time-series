@@ -18,7 +18,7 @@ class UCIData(DenseDesignMatrix):
     def __init__(self, which_set):
         assert which_set in  ['train', 'valid', 'test'], \
         'which_set %r is not in the list %r' % (which_set, ['train', 'valid', 'test'])
-        X,Y = pickle.load(dataPath(which_set))
+        X,Y = pickle.load(open(dataPath(which_set),'rb'))
         Y_oneHot = np.zeros((np.shape(X)[0], NUM_CLASSES))
         for i, val in enumerate(Y):
             Y_oneHot[i,val] = 1

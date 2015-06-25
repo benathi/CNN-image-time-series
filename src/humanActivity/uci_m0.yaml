@@ -5,33 +5,33 @@
     model: !obj:pylearn2.models.mlp.MLP {
         batch_size: 50,
         input_space: !obj:pylearn2.space.Conv2DSpace {
-            shape: [128],
+            shape: [128,1],
             num_channels: 6
         },
         layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c0',
                      output_channels: 32,
                      irange: .05,
-                     kernel_shape: [9],
-                     pool_shape: [2],
-                     pool_stride: [2],
+                     kernel_shape: [9,1],
+                     pool_shape: [2,1],
+                     pool_stride: [2,1],
                      max_kernel_norm: 1.9365
                  }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c1',
                      output_channels: 48,
                      irange: .05,
-                     kernel_shape: [9],
-                     pool_shape: [2],
-                     pool_stride: [2],
+                     kernel_shape: [9,1],
+                     pool_shape: [2,1],
+                     pool_stride: [2,1],
                      max_kernel_norm: 1.9365
                  }
                  , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
                      layer_name: 'c2',
                      output_channels: 64,
                      irange: .05,
-                     kernel_shape: [7],
-                     pool_shape: [2],
-                     pool_stride: [2],
+                     kernel_shape: [7,1],
+                     pool_shape: [2,1],
+                     pool_stride: [2,1],
                      max_kernel_norm: 1.9365
                  }
                  , !obj:pylearn2.models.mlp.RectifiedLinear {
@@ -58,10 +58,10 @@
         },
         monitoring_dataset:
             {
-                'valid' : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
+                'valid' : !obj:humanActivity.uciData.UCIData  {
                               which_set: 'valid'
                           }
-                , 'test'  : !obj:pylearn2_plankton.planktonDataConsolidated.PlanktonData  {
+                , 'test'  : !obj:humanActivity.uciData.UCIData  {
                               which_set: 'test'
                           }
             },
