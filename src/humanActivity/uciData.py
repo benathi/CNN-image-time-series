@@ -21,5 +21,9 @@ class UCIData(DenseDesignMatrix):
         X,Y = pickle.load(open(dataPath(which_set),'rb'))
         Y_oneHot = np.zeros((np.shape(X)[0], NUM_CLASSES))
         for i, val in enumerate(Y):
-            Y_oneHot[i,val] = 1
+            # note: val is from 1 to 6
+            Y_oneHot[i,val-1] = 1
         super(UCIData, self).__init__(X=X, y=Y_oneHot)
+
+if __name__=='__main__':
+    ob = UCIData(which_set='train')
