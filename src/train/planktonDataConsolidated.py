@@ -196,4 +196,4 @@ def dumpPlanktonData(maxPixel=40, cache=False):
         return (X,Y,Y_info, labelMapText)
 
 if __name__=='__main__':
-    ds = PlanktonData('report')
+    ds = PlanktonData('train', 28)
