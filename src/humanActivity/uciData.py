@@ -23,6 +23,7 @@ class UCIData(DenseDesignMatrix):
         for i, val in enumerate(Y):
             # note: val is from 1 to 6
             Y_oneHot[i,val-1] = 1
+        X = np.reshape(X, (X.shape[0], -1)) # this will flatten X which is 3D ('b', 'c', 0) to 2D ('b', 'c'*0)
         super(UCIData, self).__init__(X=X, y=Y_oneHot)
 
 if __name__=='__main__':
