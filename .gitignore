@@ -17,3 +17,4 @@ src/Learning_Transformations/XReduced
 *.npy
 *.pdf
 *.log
+*.ipynb
