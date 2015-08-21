@@ -4,32 +4,23 @@ Created on Apr 18, 2015
 @author: ben
 '''
 import numpy as np
-import pickle, os
+import pickle, os, sys
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import svm
+
+
 
 '''
 Note: format of Y_train is 
 '''
 def trainRF(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimators=600):
-    rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
-    print 'Training RF - RF Model Filename =', rf_filename
-    if cache:
-        if os.path.isfile(rf_filename):
-            print 'Model Exists - Loading from disk'
-            return pickle.load(open(rf_filename,'rb'))
     print 'number of estimators =', n_estimators
     rf_clf = RandomForestClassifier(n_estimators=n_estimators
                                     ,criterion='gini' # gini
                                     )
     # try lower n_estimator and max_depth=10 (currently no max depth)
-    # criterion choice: entropy versys gini
     rf_clf.fit(X_train, Y_train)
-    if cache:
-        print 'Saving Model to Disk'
-        pickle.dump(rf_clf, open(rf_filename, 'wb'))
-        print 'Done Saving Model to Disk'
     predictionScores(rf_clf, X_test, Y_test)
     
     ''' Add Feature Importance '''
@@ -52,13 +43,7 @@ def trainRF(X_train, Y_train, X_test, Y_test, model_name, cache=False, n_estimat
     
 
 def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_rest=True):
-    rf_filename = model_name.split('.')[0] + str('RFmodel.p')
     print 'CNN model name', model_name
-    print 'Training SVM -SVM Model Filename =', rf_filename
-    if cache:
-        if os.path.isfile(rf_filename):
-            print 'Model Exists - Loading from disk'
-            return pickle.load(open(rf_filename,'rb'))
     if one_vs_rest:
         print 'One Versus Rest SVM'
         svm_clf = svm.LinearSVC()       # one versus rest
@@ -66,48 +51,50 @@ def trainSVM(X_train, Y_train, X_test, Y_test, model_name, cache=False, one_vs_r
         print 'One Versus One SVM'
         svm_clf = svm.SVC()             # one versus one
     svm_clf.fit(X_train, Y_train)   
-    if cache:
-        print 'Saving Model to Disk'
-        pickle.dump(svm_clf, open(rf_filename, 'wb'))
-        print 'Done Saving Model to Disk'
     predictionScores(svm_clf, X_test, Y_test)
 
 
-def findActivations(model_name, listX_raw, which_layer, maxPixel):
+def findActivations(model_name, listX_raw, which_layer, maxPixel=128, verbose=False, batch_size=50):
     # 1. load model file
     import theano
     from pylearn2.utils import serial
     model = serial.load(model_name)
-    print 'Model input space is ', model.get_input_space()
+    if verbose: print 'Model input space is ', model.get_input_space()
     
     # 2. find activations at that layer
     num_x = len(listX_raw)
     activation_list = []
     for X in listX_raw:
-        print 'Shape of X Before Swap', X.shape
+        if verbose: print 'Forward Propagation'
+        if verbose: print 'Shape of X Before Swap', X.shape
         m = X.shape[0]
-        X = np.reshape(X, (m,6,maxPixel, 1))
+        #X = np.reshape(X, (m,6,maxPixel,1)) # confirms if this behaves the same way as in Pylearn2
         # 'b', 'c', 0, 1
         #X = np.swapaxes(X,1,2)
         #X = np.swapaxes(X,2,3)
-        print 'XReport type = {}. Dimension = {}'.format(type(X), np.shape(X))
+        if verbose: print 'XReport type = {}. Dimension = {}'.format(type(X), np.shape(X))
         activation = None
-        batch_size = 50
-        for batchIndex in range(m/batch_size):
+        #batch_size = 1
+        num_batches = m/batch_size
+        for batchIndex in range(num_batches):
+            if verbose: print 'Finished %.2f Percent' % (100*batchIndex/(1.*num_batches))
             _input = np.array(X[batchIndex*batch_size:(batchIndex+1)*batch_size],
                     dtype=theano.config.floatX)
+            if verbose and batchIndex == 0: print 'shape of input', _input.shape
             fprop_results = model.fprop(theano.shared(_input,
                             name='XReport'), return_all=True)[which_layer].eval()
             if batchIndex==0:
-                print 'fprop_results shape', fprop_results.shape
+                if verbose: print 'fprop_results shape', fprop_results.shape
             if activation is None:
-                activation = fprop_results
+                activation = np.empty((m,) + fprop_results.shape[1:])
+                activation[0:batch_size,...] = fprop_results
             else:
-                activation = np.concatenate((activation, fprop_results), axis=0)
+                activation[batch_size*batchIndex:batch_size*(1+batchIndex),...] = fprop_results
+                #activation = np.concatenate((activation, fprop_results), axis=0)
         # need to flatten to be (num points, num features)
-        print 'Activation shape before reshape', activation.shape
+        if verbose: print 'Activation shape before reshape', activation.shape
         activation = np.reshape(activation, (m,-1))
-        print 'After reshape', activation.shape
+        if verbose: print 'After reshape', activation.shape
         activation_list.append(activation)
     return activation_list
 
@@ -116,7 +103,7 @@ def findActivations(model_name, listX_raw, which_layer, maxPixel):
         (ds.get_num_examples(), 1, 28, 28) ), dtype=np.float32)
 '''
 
-def getRawData(data_spec, which_set, maxPixel):
+def getRawData(data_spec, which_set, maxPixel=128, debug=True):
     print 'Loading Raw Data set', which_set
     #PC = __import__('train.planktonDataConsolidated', fromlist=['planktonDataConsolidated'])
     #PC = __import__('train.planktonDataConsolidated', fromlist=[data_spec.split('.')[1]])
@@ -125,7 +112,11 @@ def getRawData(data_spec, which_set, maxPixel):
     ds = PC.UCIData(which_set)
     designMatrix = ds.get_data()[0] # index 1 is the label
     Y = ds.get_data()[1]
+    if debug: print Y 
     Y = np.where(Y)[1]
+    if debug:
+    	print 'After np.where'
+    	print Y
     return (designMatrix, Y)
     
 '''
@@ -182,6 +173,12 @@ def rfOnActivationsPerformance(model_name, data_spec, which_layer, maxPixel):
     for _i in range(20):
         print 'X_train', X_train[_i]
         print 'Y_train_predicted = %r. Y_train = %r' % (Y_train_predicted[_i], Y_train[_i])
+    print '\n---------------------\n'
+    for _i in range(20):
+        print 'X_test', X_test[_i]
+        print 'Y_test_predicted = %r. Y_test = %r' % (Y_test_predicted[_i], Y_test[_i])
+    
+    
     return
 
     print 'Running Random Forests'

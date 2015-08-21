@@ -71,12 +71,13 @@ def loadUCIdata_test():
     X_test[num_samples:,:] = X[0:3]
     Y_test = np.empty((2950))
     Y_test[:num_samples] = Y
-    Y_test[num_samples:] = Y[0:3]
+    Y_test[num_samples:] = Y[0:3] # adding extra samples to match the batch size
     pickle.dump(
         (X_test, Y_test)
         ,open(dataPath('human_activity/UCI_HAR_Dataset/test.p'),'wb')
         )
 
 if __name__ == '__main__':
-    loadUCIdata_train()
-    loadUCIdata_test()
+    pass
+    #loadUCIdata_train()
+    #loadUCIdata_test()
