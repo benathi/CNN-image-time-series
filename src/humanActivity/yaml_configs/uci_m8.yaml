@@ -1,0 +1,117 @@
+!obj:pylearn2.train.Train {
+    dataset: &train !obj:humanActivity.uciData.UCIData {
+        which_set: 'train'
+    },
+    model: !obj:pylearn2.models.mlp.MLP {
+        batch_size: 50,
+        input_space: !obj:pylearn2.space.Conv2DSpace {
+            shape: [128,1],
+            num_channels: 6,
+            axes: ['b', 'c', 0, 1]
+        },
+        layers: [ !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c0',
+                     output_channels: 48,
+                     irange: .05,
+                     kernel_shape: [9,1],
+                     pool_shape: [2,1],
+                     pool_stride: [2,1],
+                     max_kernel_norm: 1.9365
+                 }, !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c1',
+                     output_channels: 64,
+                     irange: .05,
+                     kernel_shape: [7,1],
+                     pool_shape: [1,1],
+                     pool_stride: [1,1],
+                     max_kernel_norm: 1.9365
+                 }
+                 , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c2',
+                     output_channels: 96,
+                     irange: .05,
+                     kernel_shape: [7,1],
+                     pool_shape: [2,1],
+                     pool_stride: [2,1],
+                     max_kernel_norm: 1.9365
+                 }
+                 , !obj:pylearn2.models.mlp.ConvRectifiedLinear {
+                     layer_name: 'c3',
+                     output_channels: 128,
+                     irange: .05,
+                     kernel_shape: [5,1],
+                     pool_shape: [2,1],
+                     pool_stride: [2,1],
+                     max_kernel_norm: 1.9365
+                 }
+                 , !obj:pylearn2.models.mlp.Softmax {
+                     max_col_norm: 1.9365,
+                     layer_name: 'y',
+                     n_classes: 6,
+                     istdev: .05
+                 }
+                 # add fully connected layer before Softmax? 
+                 # Example: Sigmoid, RectifiedLinear, Maxout, tanh, Linear
+                ],
+    },
+    algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+        batch_size: 50,
+        learning_rate: .01,
+        learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
+            init_momentum: .5
+        },
+        monitoring_dataset:
+            {
+                'valid' : !obj:humanActivity.uciData.UCIData  {
+                              which_set: 'valid'
+                          }
+                , 'test'  : !obj:humanActivity.uciData.UCIData  {
+                              which_set: 'test'
+                          }
+            },
+        #cost: !obj:pylearn2.costs.cost.SumOfCosts { costs: [
+        #    !obj:pylearn2.costs.cost.MethodCost {
+        #        method: 'cost_from_X'
+        #    }, !obj:pylearn2.costs.mlp.WeightDecay {
+        #        coeffs: [ .00005, .00005, .00005 , 0.005, 0.005] 
+        #        #the length must agree with number of layers
+        #    }
+        #    ]
+        #},
+        #cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
+        #    input_include_probs: { 'y' : .5 }
+        #    #input_scales: { 'f0' : 1. }
+        #},
+        termination_criterion: !obj:pylearn2.termination_criteria.And {
+            criteria: [
+                !obj:pylearn2.termination_criteria.MonitorBased {
+                    channel_name: "valid_y_misclass",
+                    prop_decrease: 0.00,
+                    N: 600
+                },
+                !obj:pylearn2.termination_criteria.EpochCounter {
+                    max_epochs: 600
+                },
+            ]
+        },
+    },
+    extensions:
+        [ !obj:pylearn2.train_extensions.best_params.MonitorBasedSaveBest {
+             channel_name: 'valid_y_misclass',
+             save_path: "model_files/uci_har_model8.pkl"
+        }, 
+        !obj:pylearn2.training_algorithms.learning_rule.MomentumAdjustor {
+            start: 1,
+            saturate: 10,
+            final_momentum: .8
+        },
+        !obj:pylearn2.training_algorithms.sgd.LinearDecayOverEpoch {
+            start: 1,
+            saturate: 500,
+            decay_factor: .01
+        }
+
+    ]
+}
+
+
