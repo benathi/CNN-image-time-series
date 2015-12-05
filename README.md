@@ -1,3 +1,1 @@
-Plankton Classification Using CNN
-
-+ Human Activity Recognition (UCI dataset) with CNN
+Plankton Classification and Human Activity Recognition (UCI dataset) with CNN
